@@ -4,9 +4,6 @@ test_*.txt
 tests/
 .pytest_cache/
 
-# Markdown files
-*.md
-
 # Python/Environment
 __pycache__/
 *.py[cod]
