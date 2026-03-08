@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-9 col-lg-8">
+        <!-- Header / Progress -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <span class="badge bg-primary rounded-pill mb-2">Question {{ index }} of {{ total }}</span>
+                <h5 class="text-muted m-0">{{ job_title }} Interview</h5>
+            </div>
+            <a href="{{ url_for('interview.reset') }}" class="btn btn-outline-secondary btn-sm"
+                onclick="return confirm('End session? Progress will be lost.')">End Session</a>
+        </div>
+
+        <div class="progress mb-4" style="height: 6px;">
+            <div class="progress-bar" role="progressbar" style="width: {{ (index / total) * 100 }}%"></div>
+        </div>
+
+        <!-- Question Card -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-primary fw-bold mb-2">{{ question.category }} - {{ question.difficulty }}
+                </h6>
+                <h3 class="card-title fw-bold mb-0">{{ question.question }}</h3>
+            </div>
+        </div>
+
+        <!-- Answer / Interaction Area -->
+        <div id="interaction-area">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <div class="mb-3">
+                        <label for="answer-input" class="form-label fw-bold">Your Answer</label>
+                        <textarea class="form-control" id="answer-input" rows="6"
+                            placeholder="Type your answer here... (Tip: Use the STAR method for behavioral questions)"></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <button id="idk-btn" class="btn btn-outline-secondary">I don't know</button>
+                        <button id="submit-btn" class="btn btn-primary px-4">Submit Answer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Area (Hidden by default) -->
+        <div id="feedback-area" class="d-none mt-4">
+            <div class="card border-primary bg-soft-primary">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="m-0"><i class="fas fa-robot me-2"></i> AI Feedback</h5>
+                    <span id="score-badge" class="badge bg-white text-primary fs-6">Score: 0/100</span>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-3">
+                        <h6 class="fw-bold text-success"><i class="fas fa-check-circle me-2"></i> Strengths</h6>
+                        <ul id="strengths-list" class="mb-0"></ul>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="fw-bold text-danger"><i class="fas fa-exclamation-circle me-2"></i> Improvements</h6>
+                        <ul id="weaknesses-list" class="mb-0"></ul>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="fw-bold text-info"><i class="fas fa-lightbulb me-2"></i> Improved Answer Idea</h6>
+                        <div class="p-3 bg-light rounded text-muted fst-italic" id="improved-answer"></div>
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <a href="{{ url_for('interview.session_view') }}" class="btn btn-primary btn-lg">Next Question
+                            <i class="fas fa-arrow-right ms-2"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const submitBtn = document.getElementById('submit-btn');
+    const idkBtn = document.getElementById('idk-btn');
+    const answerInput = document.getElementById('answer-input');
+    const interactionArea = document.getElementById('interaction-area');
+    const feedbackArea = document.getElementById('feedback-area');
+
+    async function submitAnswer(answer) {
+        // UI State: Loading
+        answerInput.disabled = true;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Evaluating...';
+
+        try {
+            const response = await fetch("{{ url_for('interview.evaluate_answer') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token() }}"
+                },
+                body: JSON.stringify({
+                    question: "{{ question.question }}",
+                    answer: answer
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+
+            const data = await response.json();
+            showFeedback(data);
+
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Something went wrong. Please try again.');
+            // Reset UI
+            answerInput.disabled = false;
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit Answer';
+        }
+    }
+
+    function showFeedback(data) {
+        // Hide input, show feedback
+        interactionArea.classList.add('d-none');
+        feedbackArea.classList.remove('d-none');
+
+        // Populate Data
+        document.getElementById('score-badge').textContent = `Score: ${data.score}/100`;
+
+        const sList = document.getElementById('strengths-list');
+        sList.innerHTML = '';
+        data.strengths.forEach(s => {
+            const li = document.createElement('li');
+            li.textContent = s;
+            sList.appendChild(li);
+        });
+
+        const wList = document.getElementById('weaknesses-list');
+        wList.innerHTML = '';
+        data.weaknesses.forEach(w => {
+            const li = document.createElement('li');
+            li.textContent = w;
+            wList.appendChild(li);
+        });
+
+        document.getElementById('improved-answer').textContent = data.improved_answer || data.feedback;
+    }
+
+    submitBtn.addEventListener('click', () => {
+        const val = answerInput.value.trim();
+        if (!val) {
+            alert('Please enter an answer.');
+            return;
+        }
+        submitAnswer(val);
+    });
+
+    idkBtn.addEventListener('click', () => {
+        if (confirm("Are you sure? This will be scored as 0.")) {
+            submitAnswer("I don't know.");
+        }
+    });
+
+</script>
+{% endblock %}

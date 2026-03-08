@@ -1,0 +1,679 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    .jobs-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .jobs-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .filter-bar {
+        background: white;
+        padding: 1.25rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        border: 1px solid #e2e8f0;
+    }
+
+    .job-card {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .job-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+        border-color: #0077B5;
+    }
+
+    .job-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
+    }
+
+    .job-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1a1f2c;
+        margin: 0 0 0.5rem 0;
+        line-height: 1.2;
+    }
+
+    .job-company {
+        color: #0077B5;
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .job-meta {
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+        margin: 1.5rem 0;
+        font-size: 0.9375rem;
+        color: #64748b;
+    }
+
+    .job-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        background: #f8fafc;
+        padding: 0.5rem 1rem;
+        border-radius: 12px;
+        border: 1px solid #f1f5f9;
+    }
+
+    .job-description {
+        color: #4b5563;
+        font-size: 1rem;
+        line-height: 1.7;
+        margin: 1.5rem 0;
+        padding: 1.25rem;
+        background: #fdfdfd;
+        border-radius: 12px;
+        border-left: 4px solid #e2e8f0;
+    }
+
+    .job-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #f1f5f9;
+    }
+
+    .btn-apply {
+        background: linear-gradient(135deg, #0077B5 0%, #005885 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1rem;
+    }
+
+    .btn-apply:hover {
+        transform: scale(1.02);
+        box-shadow: 0 8px 20px rgba(0, 119, 181, 0.3);
+    }
+
+    .btn-outline-linkedin {
+        background: white;
+        color: #0077B5;
+        border: 2px solid #0077B5;
+        padding: 0.875rem 2rem;
+        border-radius: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1rem;
+    }
+
+    .btn-outline-linkedin:hover {
+        background: #f0f9ff;
+    }
+
+    .match-badge {
+        position: absolute;
+        top: 2rem;
+        right: 2rem;
+        padding: 1rem;
+        border-radius: 16px;
+        text-align: center;
+        min-width: 80px;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .match-high {
+        background: #f0fdf4;
+        color: #166534;
+        border-color: #bbf7d0;
+    }
+
+    .match-mid {
+        background: #fffbeb;
+        color: #92400e;
+        border-color: #fef3c7;
+    }
+
+    .match-low {
+        background: #fef2f2;
+        color: #991b1b;
+        border-color: #fee2e2;
+    }
+
+    .easy-apply-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.4rem 0.8rem;
+        background: #dcfce7;
+        color: #15803d;
+        border-radius: 99px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 6rem 2rem;
+        background: white;
+        border-radius: 24px;
+        border: 2px dashed #e2e8f0;
+    }
+
+    .empty-state-icon {
+        font-size: 5rem;
+        margin-bottom: 2rem;
+        background: #f8fafc;
+        width: 120px;
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin: 0 auto 1.5rem auto;
+    }
+
+    .tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+        background: #f1f5f9;
+        padding: 0.5rem;
+        border-radius: 16px;
+        width: fit-content;
+    }
+
+    .tab-item {
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .tab-item.active {
+        background: white;
+        color: #0077B5;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.4rem 0.8rem;
+        background: #e0f2fe;
+        color: #0369a1;
+        border-radius: 99px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="jobs-container">
+    <div class="jobs-header">
+        <div>
+            <h1 style="margin: 0 0 0.5rem 0; font-size: 2.25rem;">💼 LinkedIn Explorer</h1>
+            <p style="color: #64748b; font-size: 1.125rem;">{{ jobs|length }} high-potential opportunities found</p>
+        </div>
+        <a href="{{ url_for('linkedin.index') }}" class="btn btn-outline"
+            style="border-radius: 12px; font-weight: 600;">
+            <i class="fas fa-arrow-left"></i> Back to Hub
+        </a>
+    </div>
+
+    <!-- Tabs and Filters -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+        <div class="tabs">
+            <a href="{{ url_for('linkedin.jobs', show_applied='false', easy_apply=easy_apply_only|lower) }}"
+                class="tab-item {% if not show_applied %}active{% endif %}">
+                <i class="fas fa-list"></i> To Apply
+            </a>
+            <a href="{{ url_for('linkedin.jobs', show_applied='true', easy_apply=easy_apply_only|lower) }}"
+                class="tab-item {% if show_applied %}active{% endif %}">
+                <i class="fas fa-check-circle"></i> Applied
+            </a>
+        </div>
+
+        <div class="filter-bar" style="margin-bottom: 0;">
+            <span style="font-weight: 700; color: #475569; margin-right: 0.5rem;">Platform Filter:</span>
+            <a href="{{ url_for('linkedin.jobs', easy_apply='true', show_applied=show_applied|lower) }}"
+                class="btn {% if easy_apply_only %}btn-primary{% else %}btn-outline{% endif %}"
+                style="padding: 0.625rem 1.25rem; border-radius: 10px; font-size: 0.9375rem; display: flex; align-items: center; gap: 0.5rem;">
+                ⚡ Easy Apply
+            </a>
+            <a href="{{ url_for('linkedin.jobs', easy_apply='false', show_applied=show_applied|lower) }}"
+                class="btn {% if not easy_apply_only %}btn-primary{% else %}btn-outline{% endif %}"
+                style="padding: 0.625rem 1.25rem; border-radius: 10px; font-size: 0.9375rem; display: flex; align-items: center; gap: 0.5rem;">
+                📋 Show All
+            </a>
+        </div>
+    </div>
+
+    <!-- Jobs List -->
+    {% if jobs %}
+    {% for job_item in jobs %}
+    {% set job = job_item.data %}
+    <div class="job-card">
+        {% if job_item.match_score %}
+        <div
+            class="match-badge {% if job_item.match_score >= 80 %}match-high{% elif job_item.match_score >= 60 %}match-mid{% else %}match-low{% endif %}">
+            <div
+                style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; margin-bottom: 0.25rem; opacity: 0.8;">
+                Match Score</div>
+            <div style="font-size: 1.5rem; font-weight: 800;">{{ job_item.match_score|int }}%</div>
+        </div>
+        {% endif %}
+
+        <div class="job-header">
+            <div style="max-width: calc(100% - 150px);">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                    <h2 class="job-title">{{ job.title }}</h2>
+                    {% if job.is_easy_apply %}
+                    <span class="easy-apply-tag">⚡ Easy Apply</span>
+                    {% endif %}
+                    {% if job_item.app_status %}
+                    <span class="status-badge"><i class="fas fa-check"></i> {{ job_item.app_status }}</span>
+                    {% endif %}
+                </div>
+                <p class="job-company">
+                    <i class="far fa-building"></i> {{ job.company }}
+                </p>
+            </div>
+        </div>
+
+        <div class="job-meta">
+            {% if job.location %}
+            <div class="job-meta-item">
+                <i class="fas fa-map-marker-alt" style="color: #ef4444;"></i>
+                <span>{{ job.location }}</span>
+            </div>
+            {% endif %}
+
+            {% if job.employment_type %}
+            <div class="job-meta-item">
+                <i class="fas fa-briefcase" style="color: #6366f1;"></i>
+                <span>{{ job.employment_type }}</span>
+            </div>
+            {% endif %}
+
+            {% if job.seniority_level %}
+            <div class="job-meta-item">
+                <i class="fas fa-signal" style="color: #f59e0b;"></i>
+                <span>{{ job.seniority_level }}</span>
+            </div>
+            {% endif %}
+
+            <div class="job-meta-item">
+                <i class="far fa-clock"></i>
+                <span>Scraped {{ job.scraped_at.strftime('%b %d') }}</span>
+            </div>
+        </div>
+
+        {% if job.description %}
+        <div class="job-description">
+            {{ job.description[:350] }}{% if job.description|length > 350 %}...{% endif %}
+        </div>
+        {% endif %}
+
+        <div class="job-actions">
+            {% if not job_item.app_status or job_item.app_status.lower() != 'applied' %}
+            {% if job.is_easy_apply %}
+            <button class="btn-apply" onclick="applyToJob({{ job.id }})">
+                <i class="fas fa-bolt"></i> One-Click Apply
+            </button>
+            {% endif %}
+            {% else %}
+            <button class="btn-apply" style="background: #10b981; cursor: default;" disabled>
+                <i class="fas fa-check"></i> Already Applied
+            </button>
+            {% endif %}
+            <a href="{{ job.job_url }}" target="_blank" class="btn-outline-linkedin">
+                <i class="fab fa-linkedin"></i> View Original
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">🔭</div>
+        <h2 style="margin: 0 0 1rem 0; font-size: 2rem;">No Jobs Captured</h2>
+        <p style="color: #64748b; font-size: 1.125rem; max-width: 500px; margin: 0 auto 2.5rem auto;">
+            Our scrapers are ready to hunt. Feed them some keywords and let them find your next move.
+        </p>
+        <a href="{{ url_for('linkedin.index') }}" class="btn btn-primary"
+            style="padding: 1rem 2.5rem; border-radius: 12px; font-weight: 700;">
+            🚀 Discover Jobs Now
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Progress Modal -->
+<div id="progressModal" class="modal"
+    style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter: blur(8px);">
+    <div
+        style="background:white; margin:8% auto; padding:2.5rem; border-radius:24px; max-width:550px; box-shadow:0 30px 60px rgba(0,0,0,0.3); position:relative; border: 1px solid rgba(255,255,255,0.2);">
+        <h2 id="modalTitle" style="margin-top:0; font-size: 1.75rem;">🚀 Preparing Application</h2>
+        <div style="margin:2rem 0;">
+            <div id="progressBar"
+                style="height:12px; background:#f1f5f9; border-radius:6px; overflow:hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);">
+                <div id="progressFill"
+                    style="height:100%; background:linear-gradient(90deg, #0077B5 0%, #00a0dc 100%); width:10%; transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);">
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-top: 1.25rem;">
+                <i class="fas fa-robot" style="color: #0077B5; font-size: 1.25rem;"></i>
+                <p id="statusText" style="margin:0; color:#475569; font-weight:600; font-size: 1rem;">Initializing
+                    background task...</p>
+            </div>
+        </div>
+
+        <div id="screenshotContainer" style="display:none; margin-top:1.5rem; animation: slideIn 0.5s ease;">
+            <p
+                style="font-weight:700; font-size:0.875rem; color:#ef4444; margin-bottom:0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-camera"></i> failure Context Capture:
+            </p>
+            <div
+                style="border-radius:16px; overflow:hidden; border:2px solid #fee2e2; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                <img id="failScreenshot" src="" style="width:100%; display: block; filter: brightness(0.95);">
+            </div>
+        </div>
+
+        <div id="modalActions"
+            style="display:none; margin-top:2.5rem; border-top:1px solid #f1f5f9; padding-top:1.5rem;">
+            <button onclick="closeModal()" class="btn btn-primary"
+                style="width:100%; justify-content:center; padding: 1rem; border-radius: 12px; font-weight: 700; font-size: 1.125rem;">
+                Done & Continue
+            </button>
+        </div>
+
+        <!-- NEW: Minimize button -->
+        <button id="minimizeBtn" onclick="minimizeModal()"
+            style="position:absolute; top:1.5rem; right:1.5rem; background:none; border:none; color:#94a3b8; cursor:pointer; font-size:1.25rem; transition: color 0.2s;">
+            <i class="fas fa-compress-alt"></i>
+        </button>
+    </div>
+</div>
+
+<!-- Global Progress Toast (Minimized View) -->
+<div id="globalProgressToast" onclick="restoreModal()"
+    style="display:none; position:fixed; bottom:2rem; right:2rem; background:white; padding:1rem 1.5rem; border-radius:16px; box-shadow:0 10px 25px rgba(0,0,0,0.15); z-index:999; cursor:pointer; border:1px solid #e2e8f0; animation: slideUp 0.4s ease; max-width: 300px;">
+    <div style="display:flex; align-items:center; gap:1rem;">
+        <div style="position:relative; width:40px; height:40px;">
+            <svg viewBox="0 0 36 36" style="transform: rotate(-90deg);">
+                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none"
+                    stroke="#f1f5f9" stroke-width="3" />
+                <path id="toastProgressCircle"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none"
+                    stroke="#0077B5" stroke-width="3" stroke-dasharray="0, 100" />
+            </svg>
+            <i class="fas fa-robot"
+                style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:#0077B5; font-size:0.875rem;"></i>
+        </div>
+        <div>
+            <p style="margin:0; font-weight:700; font-size:0.875rem; color:#1e293b;">Application in Progress</p>
+            <p id="toastStatus"
+                style="margin:0; font-size:0.75rem; color:#64748b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                Processing...</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<script>
+    async function applyToJob(jobId) {
+        if (!confirm('Apply to this job using CareerJet AI Automation? (Requires LinkedIn credentials)')) {
+            return;
+        }
+
+        const button = event.target.closest('button');
+
+        // Show Modal
+        const modal = document.getElementById('progressModal');
+        const fill = document.getElementById('progressFill');
+        const status = document.getElementById('statusText');
+        const title = document.getElementById('modalTitle');
+        const actions = document.getElementById('modalActions');
+        const screenshotBox = document.getElementById('screenshotContainer');
+        const minimizeBtn = document.getElementById('minimizeBtn');
+
+        modal.style.display = 'block';
+        minimizeBtn.style.display = 'block'; // Show minimize button
+        fill.style.width = '10%';
+        fill.style.background = 'linear-gradient(90deg, #0077B5 0%, #00a0dc 100%)';
+        status.innerText = 'Initializing background task...';
+        title.innerText = '🚀 Preparing Application';
+        actions.style.display = 'none';
+        screenshotBox.style.display = 'none';
+
+        try {
+            const response = await fetch(`/linkedin/apply/${jobId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `Server responded with ${response.status}`);
+            }
+
+            const result = await response.json();
+
+            if (result.success) {
+                const appId = result.application_id;
+                saveActiveApp(appId);
+                pollStatus(appId);
+            } else {
+                title.innerText = '❌ Application Failed';
+                status.innerText = result.message;
+                actions.style.display = 'block';
+                minimizeBtn.style.display = 'none'; // Hide minimize button on immediate failure
+            }
+        } catch (error) {
+            title.innerText = '❌ Error';
+            status.innerText = error.message;
+            actions.style.display = 'block';
+            minimizeBtn.style.display = 'none'; // Hide minimize button on immediate error
+        }
+    }
+
+    function pollStatus(appId) {
+        const fill = document.getElementById('progressFill');
+        const status = document.getElementById('statusText');
+        const title = document.getElementById('modalTitle');
+        const actions = document.getElementById('modalActions');
+        const screenshotBox = document.getElementById('screenshotContainer');
+        const img = document.getElementById('failScreenshot');
+
+        // Toast elements
+        const toast = document.getElementById('globalProgressToast');
+        const toastFill = document.getElementById('toastProgressCircle');
+        const toastStatus = document.getElementById('toastStatus');
+
+        const interval = setInterval(async () => {
+            try {
+                const resp = await fetch(`/linkedin/application-status/${appId}`);
+                if (!resp.ok) throw new Error('Status check failed');
+
+                const data = await resp.json();
+
+                // Update UI based on data.status
+                let progressPercent = 0;
+
+                if (data.status === 'Applied') {
+                    clearInterval(interval);
+                    clearActiveApp();
+                    progressPercent = 100;
+
+                    fill.style.width = '100%';
+                    fill.style.background = 'linear-gradient(90deg, #10b981 0%, #34d399 100%)';
+                    status.innerText = 'Application submitted successfully!';
+                    title.innerText = '✅ Application Complete';
+                    actions.style.display = 'block';
+                    document.getElementById('minimizeBtn').style.display = 'none';
+
+                    // Update toast for success
+                    toastStatus.innerText = 'Complete!';
+                    toastFill.setAttribute('stroke-dasharray', '100, 100');
+                    toastFill.setAttribute('stroke', '#10b981');
+                    setTimeout(() => toast.style.display = 'none', 5000);
+
+                } else if (data.status === 'Failed') {
+                    clearInterval(interval);
+                    clearActiveApp();
+
+                    fill.style.width = '100%';
+                    fill.style.background = 'linear-gradient(90deg, #ef4444 0%, #f87171 100%)';
+                    status.innerText = data.error || 'Unknown error occurred';
+                    title.innerText = '❌ Application Failed';
+                    actions.style.display = 'block';
+                    document.getElementById('minimizeBtn').style.display = 'none';
+
+                    if (data.screenshot && data.screenshot !== '/uploads/screenshots/None') {
+                        img.src = data.screenshot;
+                        screenshotBox.style.display = 'block';
+                    }
+
+                    // Update toast for failure
+                    toastStatus.innerText = 'Failed';
+                    toastFill.setAttribute('stroke', '#ef4444');
+                    restoreModal(); // Force restore if failed so user sees why
+
+                } else {
+                    // Processing
+                    const msg = data.message || 'Processing...';
+                    status.innerText = msg;
+                    toastStatus.innerText = msg;
+
+                    let currentWidth = parseInt(fill.style.width);
+                    if (currentWidth < 95) {
+                        progressPercent = currentWidth + 2;
+                        fill.style.width = progressPercent + '%';
+                        toastFill.setAttribute('stroke-dasharray', `${progressPercent}, 100`);
+                    }
+                }
+            } catch (e) {
+                console.error('Polling error:', e);
+            }
+        }, 1500);
+    }
+
+    // --- Background Persistence & UI Logic ---
+
+    function saveActiveApp(appId) {
+        localStorage.setItem('active_linkedin_app', appId);
+    }
+
+    function clearActiveApp() {
+        localStorage.removeItem('active_linkedin_app');
+    }
+
+    function minimizeModal() {
+        document.getElementById('progressModal').style.display = 'none';
+        document.getElementById('globalProgressToast').style.display = 'block';
+    }
+
+    function restoreModal() {
+        document.getElementById('progressModal').style.display = 'block';
+        document.getElementById('globalProgressToast').style.display = 'none';
+    }
+
+    function closeModal() {
+        document.getElementById('progressModal').style.display = 'none';
+        location.reload();
+    }
+
+    // Auto-detect processing app on page load
+    window.addEventListener('DOMContentLoaded', () => {
+        const activeAppId = localStorage.getItem('active_linkedin_app');
+        if (activeAppId) {
+            // Check if it's still processing
+            fetch(`/linkedin/application-status/${activeAppId}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'Processing') {
+                        minimizeModal(); // Show as minimized toast
+                        pollStatus(activeAppId);
+                    } else {
+                        clearActiveApp();
+                    }
+                })
+                .catch(() => clearActiveApp());
+        }
+    });
+</script>
+{% endblock %}

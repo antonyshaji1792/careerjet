@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-0">My Video Interviews</h2>
+        <p class="text-muted">Review your past performance and track your growth.</p>
+    </div>
+    <div class="d-flex gap-2">
+        {% if interviews %}
+        <form action="{{ url_for('video_interview.delete_all_sessions') }}" method="POST"
+            onsubmit="return confirm('Are you sure you want to clear ALL interview history? This cannot be undone.');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <button type="submit" class="btn btn-outline-danger shadow-sm">
+                <i class="fas fa-trash-alt me-2"></i> Clear History
+            </button>
+        </form>
+        {% endif %}
+        <a href="{{ url_for('video_interview.setup') }}" class="btn btn-primary shadow-sm">
+            <i class="fas fa-plus me-2"></i> Start New Interview
+        </a>
+    </div>
+</div>
+
+{% if interviews %}
+<div class="row g-4">
+    {% for interview in interviews %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-sm border-0 h-100 transition-up">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="badge bg-primary-subtle text-primary text-uppercase small px-2 py-1">
+                        {{ interview.persona_id | capitalize }}
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="text-muted small">{{ interview.created_at.strftime('%b %d, %Y') }}</span>
+                        <form action="{{ url_for('video_interview.delete_session', session_id=interview.id) }}"
+                            method="POST" class="d-inline" onsubmit="return confirm('Delete this interview record?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                            <button type="submit" class="btn btn-link text-danger p-0 border-0" title="Delete record">
+                                <i class="fas fa-times-circle"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <h5 class="fw-bold mb-1">{{ interview.job_title }}</h5>
+                <p class="text-muted small mb-4">Duration: {{ interview.duration_seconds // 60 }} mins</p>
+
+                <div class="d-flex align-items-center justify-content-between mt-auto">
+                    <div>
+                        <div class="small text-muted mb-1">Readiness</div>
+                        <div class="h4 fw-bold mb-0 text-primary">{{ interview.overall_score or 0 }}%</div>
+                    </div>
+                    {% if interview.status == 'completed' %}
+                    <a href="{{ url_for('video_interview.report', session_id=interview.id) }}"
+                        class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                        View Report
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('video_interview.session_stage', session_id=interview.id) }}"
+                        class="btn btn-warning btn-sm rounded-pill px-3">
+                        Resume
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card border-0 shadow-sm text-center p-5">
+    <div class="display-1 text-muted opacity-25 mb-4">
+        <i class="fas fa-video-slash"></i>
+    </div>
+    <h3>No Interviews Yet</h3>
+    <p class="text-muted px-lg-5 mb-4">
+        Practice makes perfect. Start your first AI-powered video interview to get deep analytical feedback on your
+        technical and communication skills.
+    </p>
+    <div>
+        <a href="{{ url_for('video_interview.setup') }}" class="btn btn-primary btn-lg px-5">
+            Get Started
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<style>
+    .transition-up {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .transition-up:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+    }
+</style>
+{% endblock %}

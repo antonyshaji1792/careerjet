@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-body p-5">
+                    <h1 class="display-5 fw-bold text-primary mb-4">Contact Us</h1>
+                    <p class="text-muted mb-5">Have a question or feedback? We'd love to hear from you. Fill out the
+                        form below and we'll get back to you as soon as possible.</p>
+
+                    <form method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                        {% if not current_user.is_authenticated %}
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="name" class="form-label fw-semibold">Your Name</label>
+                                <input type="text" class="form-control form-control-lg rounded-3" id="name" name="name"
+                                    placeholder="John Doe" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label fw-semibold">Email Address</label>
+                                <input type="email" class="form-control form-control-lg rounded-3" id="email"
+                                    name="email" placeholder="john@example.com" required>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="mb-4">
+                            <label for="subject" class="form-label fw-semibold">Subject</label>
+                            <input type="text" class="form-control form-control-lg rounded-3" id="subject"
+                                name="subject" placeholder="What can we help you with?" required>
+                        </div>
+
+                        <div class="mb-5">
+                            <label for="message" class="form-label fw-semibold">Message</label>
+                            <textarea class="form-control rounded-3" id="message" name="message" rows="6"
+                                placeholder="Tell us more..." required></textarea>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill py-3 fw-bold">Send
+                                Message</button>
+                        </div>
+                    </form>
+
+                    {% if current_user.is_authenticated %}
+                    <div class="mt-4 text-center">
+                        <a href="{{ url_for('contact.my_requests') }}" class="text-decoration-none fw-semibold">
+                            <i class="fas fa-history me-1"></i> View My Previous Requests
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.1);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        border: none;
+        transition: transform 0.2s;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}

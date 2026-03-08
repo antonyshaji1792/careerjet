@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <a href="{{ url_for('jobs.list_jobs') }}"
+        style="color: var(--gray); text-decoration: none; margin-bottom: 2rem; display: inline-block;">
+        <i class="fas fa-arrow-left"></i> Back to listing
+    </a>
+
+    <div class="card" style="padding: 3rem;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+            <div>
+                <h1 style="margin-bottom: 0.5rem;">{{ job.title }}</h1>
+                <h3 style="color: var(--primary); font-weight: 500;">{{ job.company }}</h3>
+                <p style="color: var(--gray); margin-top: 0.5rem;">
+                    <i class="fas fa-map-marker-alt"></i> {{ job.location }} &bull;
+                    <i class="fas fa-calendar"></i> Posted on {{ job.posted_at.strftime('%Y-%m-%d') }}
+                </p>
+            </div>
+            <a href="{{ job.job_url }}" target="_blank" class="btn btn-primary btn-lg">Apply via {{ job.platform }}</a>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #f1f5f9; margin-bottom: 2rem;">
+
+        <div class="job-description">
+            <h3 style="margin-bottom: 1rem;">Job Description</h3>
+            <div style="white-space: pre-wrap; color: #334155; line-height: 1.7;">
+                {{ job.description }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

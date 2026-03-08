@@ -1,0 +1,12 @@
+INFO:app.resumes.generator:Starting PDF generation process...
+INFO:app.resumes.generator:Temp HTML file created at: C:\Users\suppo\AppData\Local\Temp\tmprwbjuz2q.html
+INFO:app.resumes.generator:Initializing Selenium Driver...
+INFO:WDM:====== WebDriver manager ======
+INFO:WDM:Get LATEST chromedriver version for google-chrome
+INFO:WDM:Get LATEST chromedriver version for google-chrome
+INFO:WDM:Driver [C:\Users\suppo\.wdm\drivers\chromedriver\win64\144.0.7559.133\chromedriver-win32/chromedriver.exe] found in cache
+INFO:app.resumes.generator:Selenium Driver initialized successfully.
+INFO:app.resumes.generator:Loading page: file:///C:/Users/suppo/AppData/Local/Temp/tmprwbjuz2q.html
+INFO:app.resumes.generator:Executing CDP Page.printToPDF...
+INFO:app.resumes.generator:PDF data received, size: 34223 bytes
+INFO:app.resumes.generator:PDF successfully persisted to test_output_complex.pdf

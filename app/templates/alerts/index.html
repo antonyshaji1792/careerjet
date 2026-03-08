@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div>
+            <h1 style="margin: 0 0 0.5rem 0;">🔔 Job Alerts</h1>
+            <p style="color: #6b7280; margin: 0;">Get notified when new jobs match your criteria</p>
+        </div>
+        <a href="{{ url_for('alerts.create') }}" class="btn btn-primary">
+            ➕ Create Alert
+        </a>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; border: 2px solid #e5e7eb;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📊</div>
+            <h3 style="margin: 0; font-size: 2rem; color: #6366f1;">{{ total_alerts }}</h3>
+            <p style="margin: 0; color: #6b7280; font-size: 0.875rem;">Total Alerts</p>
+        </div>
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; border: 2px solid #e5e7eb;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">✅</div>
+            <h3 style="margin: 0; font-size: 2rem; color: #10b981;">{{ active_alerts }}</h3>
+            <p style="margin: 0; color: #6b7280; font-size: 0.875rem;">Active Alerts</p>
+        </div>
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; border: 2px solid #e5e7eb;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📧</div>
+            <h3 style="margin: 0; font-size: 2rem; color: #3b82f6;">0</h3>
+            <p style="margin: 0; color: #6b7280; font-size: 0.875rem;">Emails Sent Today</p>
+        </div>
+    </div>
+
+    {% if alerts %}
+    {% for alert in alerts %}
+    <div
+        style="background: white; border: 2px solid #e5e7eb; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+            <div style="flex: 1;">
+                <h3 style="margin: 0 0 0.5rem 0;">{{ alert.name }}</h3>
+                <p style="color: #6b7280; font-size: 0.875rem; margin: 0 0 1rem 0;">
+                    Keywords: <strong>{{ alert.keywords }}</strong>
+                    {% if alert.location %} • Location: <strong>{{ alert.location }}</strong>{% endif %}
+                    • Frequency: <strong>{{ alert.frequency }}</strong>
+                </p>
+                <div style="display: flex; gap: 0.75rem;">
+                    <a href="{{ url_for('alerts.edit', id=alert.id) }}" class="btn btn-outline"
+                        style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                        ✏️ Edit
+                    </a>
+                    <button onclick="testAlert({{ alert.id }})" class="btn btn-outline"
+                        style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                        🧪 Test
+                    </button>
+                    <form method="POST" action="{{ url_for('alerts.delete', id=alert.id) }}" style="display: inline;"
+                        onsubmit="return confirm('Delete this alert?');">
+                        <button type="submit" class="btn"
+                            style="background: #dc2626; color: white; padding: 0.5rem 1rem; font-size: 0.875rem;">
+                            🗑️ Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div>
+                <label style="display: flex; align-items: center; cursor: pointer;">
+                    <input type="checkbox" onchange="toggleAlert({{ alert.id }})" {{ 'checked' if alert.is_active
+                        else '' }} style="margin-right: 0.5rem;">
+                    <span style="font-size: 0.875rem; color: #6b7280;">Active</span>
+                </label>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div
+        style="text-align: center; padding: 4rem 2rem; background: white; border-radius: 12px; border: 2px dashed #e5e7eb;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">🔔</div>
+        <h2 style="margin: 0 0 0.5rem 0;">No Job Alerts Yet</h2>
+        <p style="color: #6b7280; margin: 0 0 1.5rem 0;">Create your first alert to get notified of new opportunities
+        </p>
+        <a href="{{ url_for('alerts.create') }}" class="btn btn-primary">➕ Create Your First Alert</a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    async function toggleAlert(id) {
+        const response = await fetch(`/alerts/toggle/${id}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        });
+        const result = await response.json();
+        if (result.success) {
+            // Success feedback could be more subtle but let's keep it simple for now
+        } else {
+            alert('❌ ' + result.message);
+        }
+    }
+
+    async function testAlert(id) {
+        const response = await fetch(`/alerts/test/${id}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        });
+        const result = await response.json();
+        alert(result.success ? '✅ ' + result.message : '❌ ' + result.message);
+    }
+</script>
+{% endblock %}

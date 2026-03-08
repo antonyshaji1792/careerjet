@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-10 col-lg-8">
+        <div class="card shadow-lg border-0">
+            <div class="card-body p-5">
+                <div class="row">
+                    <!-- Left: Configuration -->
+                    <div class="col-md-6 border-end">
+                        <h3 class="fw-bold mb-4">Video Interview Setup</h3>
+                        <form id="setupForm" action="{{ url_for('video_interview.start_session') }}" method="POST">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Job Title</label>
+                                <input type="text" name="job_title" class="form-control"
+                                    placeholder="e.g. Senior Backend Developer" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Interviewer Persona</label>
+                                <div class="persona-selector d-flex flex-column gap-2">
+                                    <div class="form-check card p-2">
+                                        <input class="form-check-input" type="radio" name="persona" id="persona_alex"
+                                            value="alex" checked>
+                                        <label class="form-check-label d-flex align-items-center" for="persona_alex">
+                                            <div class="ms-2">
+                                                <strong>Alex (General Recruiter)</strong>
+                                                <small class="d-block text-muted">Friendly, balanced, standard
+                                                    questions.</small>
+                                            </div>
+                                        </label>
+                                    </div>
+                                    <div class="form-check card p-2">
+                                        <input class="form-check-input" type="radio" name="persona" id="persona_sarah"
+                                            value="sarah">
+                                        <label class="form-check-label d-flex align-items-center" for="persona_sarah">
+                                            <div class="ms-2">
+                                                <strong>Sarah (Engineering Lead)</strong>
+                                                <small class="d-block text-muted">Technical, rigorous,
+                                                    deep-dives.</small>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Difficulty</label>
+                                <select name="difficulty" class="form-select">
+                                    <option value="easy">Easy (Warmup)</option>
+                                    <option value="medium" selected>Medium (Professional)</option>
+                                    <option value="hard">Hard (Stress Test)</option>
+                                </select>
+                            </div>
+
+                            <div class="alert alert-info py-2 small">
+                                <i class="fas fa-shield-alt me-2"></i> No video or audio is stored on our servers.
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Right: Hardware Check -->
+                    <div class="col-md-6 px-4 d-flex flex-column">
+                        <h4 class="fw-bold mb-3">Tech Check</h4>
+
+                        <!-- Video Preview -->
+                        <div class="preview-container bg-dark rounded mb-3 d-flex align-items-center justify-content-center position-relative"
+                            style="height: 240px;">
+                            <video id="videoPreview" autoplay muted playsinline
+                                class="w-100 h-100 rounded object-fit-cover d-none"></video>
+                            <div id="videoPlaceholder" class="text-center text-muted p-4">
+                                <i class="fas fa-video-slash display-4 mb-2"></i>
+                                <p>Camera is currently OFF</p>
+                            </div>
+                            <div
+                                class="position-absolute bottom-0 start-0 w-100 p-2 bg-black bg-opacity-50 text-white small d-flex justify-content-between">
+                                <span id="micStatus"><i class="fas fa-microphone-slash"></i> Mic Off</span>
+                                <span id="camStatus"><i class="fas fa-video-slash"></i> Cam Off</span>
+                            </div>
+                        </div>
+
+                        <!-- Hardware Toggles -->
+                        <div class="d-grid gap-2 mb-4">
+                            <button type="button" id="toggleCam" class="btn btn-outline-secondary">
+                                <i class="fas fa-video me-2"></i> Enable Camera
+                            </button>
+                            <button type="button" id="toggleMic" class="btn btn-outline-secondary">
+                                <i class="fas fa-microphone me-2"></i> Enable Microphone
+                            </button>
+                        </div>
+
+                        <!-- Mic Visualization (Simple Bar) -->
+                        <div id="micLevelContainer" class="mb-4 d-none">
+                            <label class="small text-muted d-block mb-1">Testing Microphone...</label>
+                            <div class="progress" style="height: 4px;">
+                                <div id="micLevelBar" class="progress-bar bg-success" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="mt-auto">
+                            <button type="button" id="startBtn" class="btn btn-primary btn-lg w-100 disabled"
+                                onclick="submitSetup()">
+                                Enter Interview Room <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let localStream = null;
+    let micLevelInterval = null;
+
+    async function toggleCamera() {
+        const btn = document.getElementById('toggleCam');
+        const video = document.getElementById('videoPreview');
+        const placeholder = document.getElementById('videoPlaceholder');
+        const camStatus = document.getElementById('camStatus');
+
+        try {
+            if (!localStream) {
+                localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            } else {
+                // Ensure video track is present
+                const videoTrack = localStream.getVideoTracks()[0];
+                if (videoTrack) {
+                    videoTrack.enabled = !videoTrack.enabled;
+                    updateUI();
+                    return;
+                } else {
+                    const extraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    localStream.addTrack(extraStream.getVideoTracks()[0]);
+                }
+            }
+            updateUI();
+        } catch (err) {
+            console.error("Camera access error:", err);
+            alert("Could not access camera. Please check permissions.");
+        }
+
+        function updateUI() {
+            const videoTrack = localStream.getVideoTracks()[0];
+            if (videoTrack && videoTrack.enabled) {
+                video.srcObject = localStream;
+                video.classList.remove('d-none');
+                placeholder.classList.add('d-none');
+                btn.innerHTML = '<i class="fas fa-video-slash me-2"></i> Disable Camera';
+                btn.classList.replace('btn-outline-secondary', 'btn-success');
+                camStatus.innerHTML = '<i class="fas fa-video"></i> Cam On';
+            } else {
+                video.classList.add('d-none');
+                placeholder.classList.remove('d-none');
+                btn.innerHTML = '<i class="fas fa-video me-2"></i> Enable Camera';
+                btn.classList.replace('btn-success', 'btn-outline-secondary');
+                camStatus.innerHTML = '<i class="fas fa-video-slash"></i> Cam Off';
+            }
+            checkStartAvailability();
+        }
+    }
+
+    async function toggleMicrophone() {
+        const btn = document.getElementById('toggleMic');
+        const micStatus = document.getElementById('micStatus');
+        const levelContainer = document.getElementById('micLevelContainer');
+
+        try {
+            if (!localStream) {
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            }
+
+            const audioTrack = localStream.getAudioTracks()[0];
+            audioTrack.enabled = !audioTrack.enabled;
+
+            if (audioTrack.enabled) {
+                btn.innerHTML = '<i class="fas fa-microphone-slash me-2"></i> Disable Microphone';
+                btn.classList.replace('btn-outline-secondary', 'btn-success');
+                micStatus.innerHTML = '<i class="fas fa-microphone"></i> Mic On';
+                levelContainer.classList.remove('d-none');
+                startMicVisualization();
+            } else {
+                btn.innerHTML = '<i class="fas fa-microphone me-2"></i> Enable Microphone';
+                btn.classList.replace('btn-success', 'btn-outline-secondary');
+                micStatus.innerHTML = '<i class="fas fa-microphone-slash"></i> Mic Off';
+                levelContainer.classList.add('d-none');
+                stopMicVisualization();
+            }
+            checkStartAvailability();
+        } catch (err) {
+            console.error("Mic access error:", err);
+            alert("Could not access microphone.");
+        }
+    }
+
+    function startMicVisualization() {
+        if (micLevelInterval) return;
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const analyser = audioContext.createAnalyser();
+        const source = audioContext.createMediaStreamSource(localStream);
+        source.connect(analyser);
+        analyser.fftSize = 256;
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        const bar = document.getElementById('micLevelBar');
+
+        function update() {
+            analyser.getByteFrequencyData(dataArray);
+            let average = dataArray.reduce((a, b) => a + b) / bufferLength;
+            bar.style.width = Math.min(100, average * 2) + '%';
+            micLevelInterval = requestAnimationFrame(update);
+        }
+        update();
+    }
+
+    function stopMicVisualization() {
+        if (micLevelInterval) {
+            cancelAnimationFrame(micLevelInterval);
+            micLevelInterval = null;
+        }
+    }
+
+    function checkStartAvailability() {
+        const startBtn = document.getElementById('startBtn');
+        const micReady = localStream && localStream.getAudioTracks().some(t => t.enabled);
+        if (micReady) {
+            startBtn.classList.remove('disabled');
+        } else {
+            startBtn.classList.add('disabled');
+        }
+    }
+
+    function submitSetup() {
+        if (document.getElementById('startBtn').classList.contains('disabled')) return;
+        // Stop the setup stream before moving to the stage
+        if (localStream) {
+            localStream.getTracks().forEach(t => t.stop());
+        }
+        document.getElementById('setupForm').submit();
+    }
+
+    document.getElementById('toggleCam').addEventListener('click', toggleCamera);
+    document.getElementById('toggleMic').addEventListener('click', toggleMicrophone);
+</script>
+{% endblock %}

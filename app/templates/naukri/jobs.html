@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    .jobs-container {
+        max-width: 1300px;
+        margin: 0 auto;
+    }
+
+    .jobs-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .job-card {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 2.5rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+    }
+
+    .job-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
+        border-color: #4A90E2;
+    }
+
+    .job-title {
+        font-size: 1.625rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .job-company {
+        color: #4A90E2;
+        font-size: 1.125rem;
+        font-weight: 700;
+        margin: 0 0 1.5rem 0;
+    }
+
+    .job-meta {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 2rem;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        background: #f8fafc;
+        padding: 0.625rem 1.25rem;
+        border-radius: 12px;
+        font-size: 0.9375rem;
+        color: #64748b;
+        border: 1px solid #f1f5f9;
+    }
+
+    .match-score-badge {
+        position: absolute;
+        top: 2.5rem;
+        right: 2.5rem;
+        text-align: center;
+        padding: 1rem;
+        border-radius: 16px;
+        min-width: 90px;
+    }
+
+    .score-high {
+        background: #f0fdf4;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+    }
+
+    .score-mid {
+        background: #fffbeb;
+        color: #92400e;
+        border: 1px solid #fef3c7;
+    }
+
+    .score-low {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fee2e2;
+    }
+
+    .btn-apply {
+        background: #4A90E2;
+        color: white;
+        border: none;
+        padding: 0.875rem 2rem;
+        border-radius: 10px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .btn-apply:hover {
+        background: #357ABD;
+        transform: scale(1.02);
+    }
+
+    .btn-view {
+        background: #f8fafc;
+        color: #1e293b;
+        border: 1px solid #e2e8f0;
+        padding: 0.875rem 2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+    .btn-view:hover {
+        background: #f1f5f9;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="jobs-container">
+    <div class="jobs-header">
+        <div>
+            <h1 style="margin: 0; font-size: 2.5rem;">🔎 Naukri Explorer</h1>
+            <p style="color: #64748b; font-size: 1.125rem; margin-top: 0.5rem;">Browse discovered roles from the Indian
+                job market</p>
+        </div>
+        <a href="{{ url_for('naukri.index') }}" class="btn-view">
+            <i class="fas fa-arrow-left"></i> Naukri Hub
+        </a>
+    </div>
+
+    {% if jobs %}
+    {% for item in jobs %}
+    {% set job = item.data %}
+    <div class="job-card">
+        {% if item.match_score %}
+        <div
+            class="match-score-badge {% if item.match_score >= 80 %}score-high{% elif item.match_score >= 60 %}score-mid{% else %}score-low{% endif %}">
+            <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; margin-bottom: 0.25rem;">Match
+            </div>
+            <div style="font-size: 1.75rem; font-weight: 900;">{{ item.match_score|int }}%</div>
+        </div>
+        {% endif %}
+
+        <h2 class="job-title">{{ job.title }}</h2>
+        <p class="job-company">{{ job.company }}</p>
+
+        <div class="job-meta">
+            <div class="meta-item"><i class="fas fa-map-marker-alt" style="color: #ef4444;"></i> {{ job.location }}
+            </div>
+            <div class="meta-item"><i class="fas fa-briefcase" style="color: #4A90E2;"></i> {{ job.experience_required
+                }}</div>
+            <div class="meta-item"><i class="fas fa-wallet" style="color: #10b981;"></i> {{ job.salary_range }}</div>
+            <div class="meta-item"><i class="far fa-clock"></i> {{ job.posted_at }}</div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <button class="btn-apply" onclick="applyToNaukriJob({{ job.id }}, this)">
+                <i class="fas fa-paper-plane"></i> One-Click Apply
+            </button>
+            <a href="{{ job.job_url }}" target="_blank" class="btn-view">
+                <i class="fas fa-external-link-alt"></i> View on Naukri
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div style="text-align: center; padding: 5rem; background: white; border-radius: 20px; border: 2px dashed #e2e8f0;">
+        <div style="font-size: 4rem; margin-bottom: 1.5rem;">🔭</div>
+        <h2>No Naukri Jobs Found</h2>
+        <p style="color: #64748b; margin-bottom: 2rem;">We haven't discovered any jobs on Naukri.com yet. Try running a
+            scrape!</p>
+        <a href="{{ url_for('naukri.index') }}" class="btn-apply" style="display: inline-flex; width: auto;">Go to
+            Scraper</a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    async function applyToNaukriJob(jobId, btn) {
+        if (!confirm('Apply to this job on Naukri.com?')) return;
+
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        btn.disabled = true;
+
+        try {
+            const response = await fetch(`/naukri/apply/${jobId}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                btn.innerHTML = '<i class="fas fa-check"></i> Applied Successfully';
+                btn.style.background = '#10b981';
+            } else {
+                alert('❌ ' + result.message);
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
+        } catch (e) {
+            alert('❌ Network error: ' + e.message);
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }
+    }
+</script>
+{% endblock %}

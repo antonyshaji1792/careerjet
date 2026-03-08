@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <h1 style="margin: 0 0 1rem 0;">💰 Salary Negotiation Coach</h1>
+        <p style="color: #6b7280; font-size: 1.125rem;">
+            Get AI-powered guidance to negotiate your best compensation package
+        </p>
+    </div>
+
+    <div
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+        <a href="{{ url_for('salary.market_data') }}" style="text-decoration: none;">
+            <div class="card" style="height: 100%; cursor: pointer; transition: transform 0.3s;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
+                <h3 style="margin: 0 0 0.5rem 0;">Market Data</h3>
+                <p style="color: #6b7280; margin: 0;">
+                    Research salary ranges for your role and location
+                </p>
+            </div>
+        </a>
+
+        <a href="{{ url_for('salary.analyze_offer') }}" style="text-decoration: none;">
+            <div class="card" style="height: 100%; cursor: pointer; transition: transform 0.3s;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🔍</div>
+                <h3 style="margin: 0 0 0.5rem 0;">Analyze Offer</h3>
+                <p style="color: #6b7280; margin: 0;">
+                    Evaluate your job offer and get negotiation strategies
+                </p>
+            </div>
+        </a>
+
+        <a href="{{ url_for('salary.negotiate') }}" style="text-decoration: none;">
+            <div class="card" style="height: 100%; cursor: pointer; transition: transform 0.3s;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">✉️</div>
+                <h3 style="margin: 0 0 0.5rem 0;">Counter Offer</h3>
+                <p style="color: #6b7280; margin: 0;">
+                    Generate professional counter-offer emails
+                </p>
+            </div>
+        </a>
+
+        <a href="{{ url_for('salary.tips') }}" style="text-decoration: none;">
+            <div class="card" style="height: 100%; cursor: pointer; transition: transform 0.3s;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">💡</div>
+                <h3 style="margin: 0 0 0.5rem 0;">Tips & Advice</h3>
+                <p style="color: #6b7280; margin: 0;">
+                    Learn negotiation best practices and strategies
+                </p>
+            </div>
+        </a>
+    </div>
+
+    <div class="card" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white;">
+        <h2 style="margin: 0 0 1rem 0;">Quick Tips</h2>
+        <ul style="margin: 0; padding-left: 1.5rem;">
+            {% for tip in tips.dos[:5] %}
+            <li style="margin-bottom: 0.5rem;">{{ tip }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

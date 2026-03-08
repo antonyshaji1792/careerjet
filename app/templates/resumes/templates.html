@@ -1,0 +1,545 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        --bg-color: #f8fafc;
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --hover-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    body {
+        background-color: var(--bg-color);
+    }
+
+    .hero-section {
+        background: radial-gradient(circle at top right, #e0e7ff, transparent 40%),
+            radial-gradient(circle at bottom left, #f3e8ff, transparent 40%);
+        padding: 3rem 0;
+        text-align: center;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+
+    .hero-title {
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.5rem;
+        font-size: 2rem;
+    }
+
+    .hero-subtitle {
+        color: #64748b;
+        font-size: 1rem;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .template-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 2rem;
+        padding-bottom: 4rem;
+    }
+
+    /* Template Card */
+    .template-card {
+        background: transparent;
+        border-radius: 8px;
+        transition: transform 0.2s ease;
+        position: relative;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    /* Resume Preview Container (The "Thumbnail") */
+    .preview-container {
+        width: 100%;
+        aspect-ratio: 1 / 1.414;
+        /* A4 Ratio */
+        background: #e2e8f0;
+        border-radius: 8px;
+        overflow: hidden;
+        position: relative;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+        /* Center the scaled content */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .template-card:hover .preview-container {
+        box-shadow: var(--hover-shadow);
+        transform: translateY(-4px);
+    }
+
+    /* Overlay on Hover */
+    .preview-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        z-index: 10;
+    }
+
+    .template-card:hover .preview-overlay {
+        opacity: 1;
+    }
+
+    .use-template-btn {
+        background: white;
+        color: #1e293b;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 99px;
+        /* Pill shape */
+        border: none;
+        transform: translateY(10px);
+        transition: transform 0.2s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .template-card:hover .use-template-btn {
+        transform: translateY(0);
+    }
+
+    .template-info {
+        padding: 0 0.5rem;
+    }
+
+    .template-name {
+        font-weight: 600;
+        font-size: 1rem;
+        color: #1e293b;
+        margin-bottom: 0.25rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .template-desc {
+        font-size: 0.8rem;
+        color: #64748b;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* =========================================
+       CSS Mini-Resumes (High Fidelity Text)
+       ========================================= */
+    .mini-resume {
+        width: 210mm;
+        /* True A4 Width */
+        height: 297mm;
+        /* True A4 Height */
+        background: white;
+        position: absolute;
+        transform-origin: center center;
+        /* Scale calculated to fit container: 240px / 210mm (~793px) approx 0.28 */
+        transform: scale(0.28);
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+        pointer-events: none;
+        /* Let clicks pass to card */
+        overflow: hidden;
+        color: #334155;
+        font-family: 'Inter', sans-serif;
+        /* Ensure readable font */
+        line-height: 1.4;
+    }
+
+    /* Typography Defaults for Mini Resume */
+    .mr-h1 {
+        font-size: 32px;
+        font-weight: 800;
+        color: #1e293b;
+        margin: 0;
+        line-height: 1.1;
+    }
+
+    .mr-h2 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1e293b;
+        margin-top: 25px;
+        margin-bottom: 15px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 5px;
+    }
+
+    .mr-h3 {
+        font-size: 16px;
+        font-weight: 700;
+        color: #334155;
+        margin: 0 0 4px 0;
+    }
+
+    .mr-sub {
+        font-size: 14px;
+        color: #64748b;
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+
+    .mr-p {
+        font-size: 12px;
+        color: #475569;
+        margin-bottom: 8px;
+    }
+
+    .mr-ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .mr-li {
+        font-size: 12px;
+        color: #475569;
+        margin-bottom: 6px;
+        padding-left: 12px;
+        position: relative;
+    }
+
+    .mr-li::before {
+        content: "•";
+        position: absolute;
+        left: 0;
+        color: #94a3b8;
+    }
+
+    /* Layout Logic */
+    .mr-content {
+        padding: 40px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* --- Standard Layout --- */
+    .layout-standard .mr-header {
+        text-align: center;
+        padding: 40px 40px 20px;
+        border-bottom: 1px solid #e2e8f0;
+        margin-bottom: 10px;
+    }
+
+    .layout-standard .mr-h1 {
+        color: var(--accent);
+    }
+
+    .layout-standard .mr-h2 {
+        color: var(--accent);
+        border-color: var(--accent);
+    }
+
+    /* --- Bold Layout --- */
+    .layout-bold .mr-header {
+        background: var(--accent);
+        color: white;
+        padding: 50px 40px;
+    }
+
+    .layout-bold .mr-h1 {
+        color: white;
+    }
+
+    .layout-bold .mr-sub {
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .layout-bold .mr-p {
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .layout-bold .mr-h2 {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: rgba(0, 0, 0, 0.03);
+        padding: 5px;
+    }
+
+    /* --- Split Layout --- */
+    .layout-split {
+        flex-direction: row;
+    }
+
+    .layout-split .mr-sidebar {
+        width: 32%;
+        background: #f8fafc;
+        padding: 40px 25px;
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .layout-split .mr-main {
+        flex: 1;
+        padding: 40px;
+    }
+
+    .layout-split .mr-h1 {
+        font-size: 28px;
+        margin-bottom: 5px;
+    }
+
+    .layout-split .mr-h2.side {
+        font-size: 14px;
+        margin-top: 30px;
+        border-bottom: 1px solid #cbd5e1;
+        color: var(--accent);
+    }
+
+    /* --- Dark Layout --- */
+    .layout-dark {
+        background: #1e293b;
+        color: #e2e8f0;
+    }
+
+    .layout-dark .mr-h1 {
+        color: white;
+    }
+
+    .layout-dark .mr-h2 {
+        color: var(--accent);
+        border-color: #334155;
+    }
+
+    .layout-dark .mr-h3 {
+        color: #f1f5f9;
+    }
+
+    .layout-dark .mr-sub {
+        color: #94a3b8;
+    }
+
+    .layout-dark .mr-p,
+    .layout-dark .mr-li {
+        color: #cbd5e1;
+    }
+
+    .layout-dark .mr-sidebar {
+        background: #0f172a;
+        border-color: #334155;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <h1 class="hero-title">Resume Templates</h1>
+    <p class="hero-subtitle">
+        Professionally designed, ATS-friendly templates. Click to customize.
+    </p>
+</div>
+
+<div class="container">
+    <div class="template-grid">
+        {% for template in templates %}
+        <div class="template-card"
+            onclick="window.location.href='{{ url_for('resumes.builder_ui') }}?template={{ template.id }}'">
+
+            <div class="preview-container">
+                <!-- High Fidelity CSS Mockup -->
+                <div class="mini-resume layout-{{ template.preview_type }}" style="--accent: {{ template.accent }}">
+
+                    {% if template.preview_type == 'split' %}
+                    <div class="mr-sidebar">
+                        <!-- Avatar Circle Placeholder -->
+                        <div
+                            style="width: 80px; height: 80px; background: #e2e8f0; border-radius: 50%; margin-bottom: 20px; overflow: hidden; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 10px;">
+                            PHOTO</div>
+
+                        <div class="mr-h2 side">Contact</div>
+                        <div class="mr-p">+1 123-456-7890</div>
+                        <div class="mr-p">hello@email.com</div>
+                        <div class="mr-p">New York, NY</div>
+
+                        <div class="mr-h2 side">Skills</div>
+                        <div class="mr-p">UI/UX Design</div>
+                        <div class="mr-p">Product Strategy</div>
+                        <div class="mr-p">Figma & Sketch</div>
+                        <div class="mr-p">HTML / CSS</div>
+
+                        <div class="mr-h2 side">Education</div>
+                        <div class="mr-p"><strong>B.S. Design</strong></div>
+                        <div class="mr-p" style="font-size: 10px;">University of Art, 2018</div>
+                    </div>
+                    <div class="mr-main">
+                        <div class="mr-h1" style="color: var(--accent)">Alex Morgan</div>
+                        <div class="mr-sub" style="font-size: 16px; color: var(--accent);">Senior Product Designer</div>
+                        <div class="mr-p" style="margin-top: 15px;">Creative designer with 5+ years of experience
+                            building comprehensive product solutions for tech companies.</div>
+
+                        <div class="mr-h2">Experience</div>
+
+                        <div class="mr-h3">Senior UX Designer</div>
+                        <div class="mr-sub">TechFlow Inc. | 2020 - Present</div>
+                        <ul class="mr-ul">
+                            <li class="mr-li">Led redesign of core mobile app reaching 1M+ users.</li>
+                            <li class="mr-li">Managed a team of 3 junior designers.</li>
+                            <li class="mr-li">Increased user retention by 25% through UI improvements.</li>
+                        </ul>
+
+                        <div class="mr-h3" style="margin-top: 20px;">Product Designer</div>
+                        <div class="mr-sub">StartUp Studio | 2018 - 2020</div>
+                        <ul class="mr-ul">
+                            <li class="mr-li">Defined initial design system and brand identity.</li>
+                            <li class="mr-li">Collaborated closely with engineering on implementation.</li>
+                        </ul>
+                    </div>
+
+                    {% elif template.preview_type == 'bold' %}
+                    <div class="mr-header">
+                        <div class="mr-h1">ALEX MORGAN</div>
+                        <div class="mr-sub" style="color: rgba(255,255,255,0.8); letter-spacing: 2px;">PRODUCT DIRECTOR
+                        </div>
+                        <div class="mr-p" style="color: white; margin-top: 10px; opacity: 0.8;">NEW YORK, NY •
+                            HELLO@EMAIL.COM</div>
+                    </div>
+                    <div class="mr-content">
+                        <div class="mr-h2">Professional Profile</div>
+                        <div class="mr-p">Strategic leader with a track record of scaling design teams and delivering
+                            award-winning products in the fintech space.</div>
+
+                        <div class="mr-h2">Work History</div>
+
+                        <div class="mr-h3">Director of Product</div>
+                        <div class="mr-sub">Global Tech | 2021 - Present</div>
+                        <ul class="mr-ul">
+                            <li class="mr-li">Oversaw product roadmap for 3 key business units.</li>
+                            <li class="mr-li">Scaled team from 5 to 20 cross-functional members.</li>
+                        </ul>
+
+                        <div class="mr-h3" style="margin-top: 15px;">Senior Product Manager</div>
+                        <div class="mr-sub">Innovate Corp | 2018 - 2021</div>
+                        <ul class="mr-ul">
+                            <li class="mr-li">Launched 2 successful SaaS products from zero to one.</li>
+                            <li class="mr-li">Achieved $2M ARR within first year of launch.</li>
+                        </ul>
+
+                        <div style="display: flex; gap: 40px; margin-top: 20px;">
+                            <div style="flex: 1">
+                                <div class="mr-h2">Education</div>
+                                <div class="mr-h3">MBA</div>
+                                <div class="mr-sub">Tech University</div>
+                            </div>
+                            <div style="flex: 1">
+                                <div class="mr-h2">Core Skills</div>
+                                <div class="mr-p">Strategic Planning • Agile • Leadership</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% elif template.preview_type == 'dark' %}
+                    <div class="mr-content" style="padding: 50px;">
+                        <div style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 40px;">
+                            <div class="mr-h1">Alex Morgan</div>
+                            <div class="mr-sub" style="color: var(--accent); font-size: 18px;">Senior Software Engineer
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 40px;">
+                            <div style="flex: 2;">
+                                <div class="mr-h2">Experience</div>
+                                <div class="mr-h3">Senior Engineer</div>
+                                <div class="mr-sub">Cloud Systems | 2020 - Present</div>
+                                <ul class="mr-ul">
+                                    <li class="mr-li">Architected scalable microservices.</li>
+                                    <li class="mr-li">Reduced latency by 40% via caching.</li>
+                                </ul>
+
+                                <div class="mr-h3" style="margin-top: 20px;">Software Engineer</div>
+                                <div class="mr-sub">Dev Inc | 2018 - 2020</div>
+                                <ul class="mr-ul">
+                                    <li class="mr-li">Full-stack development using React/Python.</li>
+                                </ul>
+                            </div>
+                            <div style="flex: 1; border-left: 1px solid #334155; padding-left: 30px;">
+                                <div class="mr-h2">Contact</div>
+                                <div class="mr-p">newyork@email.com</div>
+                                <div class="mr-p">+1 555-0199</div>
+
+                                <div class="mr-h2">Stack</div>
+                                <div class="mr-p">Python / Django</div>
+                                <div class="mr-p">React / Next.js</div>
+                                <div class="mr-p">AWS / Docker</div>
+                                <div class="mr-p">PostgreSQL</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% else %}
+                    <!-- Standard Layout -->
+                    <div class="mr-header">
+                        <div class="mr-h1">Alex Morgan</div>
+                        <div class="mr-sub">Marketing Specialist</div>
+                        <div class="mr-p" style="margin-top: 8px;">New York, NY | alex@email.com | +1 555-0123</div>
+                    </div>
+                    <div class="mr-content">
+                        <div class="mr-h2">Professional Summary</div>
+                        <div class="mr-p">Results-driven marketing professional with proven success in digital
+                            campaigns, content strategy, and brand growth.</div>
+
+                        <div class="mr-h2">Experience</div>
+
+                        <div class="mr-h3">Marketing Manager</div>
+                        <div class="mr-sub">Creative Agency | 2019 - Present</div>
+                        <ul class="mr-ul">
+                            <li class="mr-li">Managed $50k monthly ad budget achieving 3x ROAS.</li>
+                            <li class="mr-li">Coordinated cross-channel marketing campaigns.</li>
+                            <li class="mr-li">Analyzed market trends to identify new opportunities.</li>
+                        </ul>
+
+                        <div class="mr-h3" style="margin-top: 15px;">Content Strategist</div>
+                        <div class="mr-sub">Media House | 2017 - 2019</div>
+                        <ul class="mr-ul">
+                            <li class="mr-li">Increased organic traffic by 150% in 12 months.</li>
+                            <li class="mr-li">Developed editorial calendar for company blog.</li>
+                        </ul>
+
+                        <div class="mr-h2">Education</div>
+                        <div class="mr-h3">BA Marketing</div>
+                        <div class="mr-sub">State University, 2017</div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Hover Overlay -->
+                <div class="preview-overlay">
+                    <button class="use-template-btn">Use This Template</button>
+                </div>
+            </div>
+
+            <div class="template-info">
+                <div class="template-name">
+                    {{ template.name }}
+                    {% if template.accent %}
+                    <span
+                        style="width: 12px; height: 12px; border-radius: 50%; background: {{ template.accent }}; display: inline-block;"></span>
+                    {% endif %}
+                </div>
+                <p class="template-desc">{{ template.description }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

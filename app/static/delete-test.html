@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="test-token">
+    <title>Delete Button Test</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/profile-editor.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            background: #f5f5f5;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .test-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .skills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .skill-tag {
+            background: #e0e7ff;
+            color: #4338ca;
+            padding: 0.5rem 1rem;
+            border-radius: 1.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --dark: #1f2937;
+            --gray: #6b7280;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f9ff;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🧪 Delete Button Test</h1>
+
+    <div class="test-section">
+        <h2>Test 1: Simple Button Click</h2>
+        <button onclick="alert('Button works!'); return false;"
+            style="padding: 10px 20px; background: #6366f1; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            Click Me
+        </button>
+        <p><small>If alert appears, onclick is working</small></p>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Delete Function Call</h2>
+        <button onclick="testDelete(); return false;"
+            style="padding: 10px 20px; background: #ef4444; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            Test Delete Function
+        </button>
+        <p><small>Should call deleteSkill function</small></p>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Actual Skill Tags with Delete Buttons</h2>
+        <div class="skills-container">
+            <span class="skill-tag">
+                PHP
+                <button onclick="deleteSkill(1); return false;" class="skill-delete" title="Remove skill">
+                    <i class="fas fa-times"></i>
+                </button>
+            </span>
+            <span class="skill-tag">
+                JavaScript
+                <button onclick="deleteSkill(2); return false;" class="skill-delete" title="Remove skill">
+                    <i class="fas fa-times"></i>
+                </button>
+            </span>
+            <span class="skill-tag">
+                Python
+                <button onclick="deleteSkill(3); return false;" class="skill-delete" title="Remove skill">
+                    <i class="fas fa-times"></i>
+                </button>
+            </span>
+        </div>
+        <p><small>Hover over skills to see X button, then click it</small></p>
+    </div>
+
+    <div class="status">
+        <h3>Diagnostic Info:</h3>
+        <div id="diagnostic"></div>
+    </div>
+
+    <script>
+        function testDelete() {
+            console.log('testDelete called');
+            if (typeof deleteSkill === 'function') {
+                alert('deleteSkill function exists! Calling it now...');
+                deleteSkill(999);
+            } else {
+                alert('ERROR: deleteSkill function not found!');
+            }
+        }
+
+        // Check status after page loads
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const diagnostic = document.getElementById('diagnostic');
+                let html = '';
+
+                // Check if functions exist
+                html += '<p><strong>deleteSkill:</strong> ' + (typeof deleteSkill === 'function' ? '✅ Defined' : '❌ Not defined') + '</p>';
+                html += '<p><strong>modalManager:</strong> ' + (typeof modalManager !== 'undefined' && modalManager !== null ? '✅ Initialized' : '❌ Not initialized') + '</p>';
+                html += '<p><strong>getCSRFToken:</strong> ' + (typeof getCSRFToken === 'function' ? '✅ Defined' : '❌ Not defined') + '</p>';
+                html += '<p><strong>showToast:</strong> ' + (typeof showToast === 'function' ? '✅ Defined' : '❌ Not defined') + '</p>';
+
+                // Try to get CSRF token
+                try {
+                    const token = getCSRFToken();
+                    html += '<p><strong>CSRF Token:</strong> ' + (token ? '✅ ' + token : '❌ Not found') + '</p>';
+                } catch (e) {
+                    html += '<p><strong>CSRF Token:</strong> ❌ Error: ' + e.message + '</p>';
+                }
+
+                diagnostic.innerHTML = html;
+            }, 500);
+        });
+    </script>
+
+    <!-- Load the actual scripts -->
+    <script src="/static/js/profile-editor.js"></script>
+    <script src="/static/js/profile-editor-extended.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,30 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'Courier New', monospace; background: #1a1a1a; color: #eee; padding: 40px; }
+        .header { border-left: 5px solid #22c55e; padding-left: 20px; margin-bottom: 40px; }
+        .header h1 { font-size: 30pt; color: white; margin: 0; }
+        .section-title { color: #22c55e; text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid #333; }
+        .item { margin-bottom: 20px; border-bottom: 1px solid #222; padding-bottom: 10px; }
+        .skill { border: 1px solid #22c55e; padding: 2px 8px; color: #22c55e; margin: 3px; display: inline-block; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ header.full_name }}</h1>
+        <div style="color: #22c55e; font-weight: bold;">{{ header.title }}</div>
+        <div style="font-size: 9pt; opacity: 0.7;">{{ header.email }} | {{ header.phone }} | {{ header.location }}</div>
+    </div>
+    <div class="section"><h2 class="section-title">> Summary</h2><p>{{ summary }}</p></div>
+    <div class="section"><h2 class="section-title">> Experience</h2>
+        {% for exp in experience %}<div class="item">
+            <div style="display:flex; justify-content:space-between"><strong>{{ exp.role }}</strong><span>{{ exp.duration }}</span></div>
+            <div style="color: #22c55e">{{ exp.company }}</div>
+            {% for a in exp.achievements %}<div>- {{ a }}</div>{% endfor %}
+        </div>{% endfor %}
+    </div>
+</body>
+</html>

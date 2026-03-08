@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="admin-container" style="max-width: 1400px; margin: 0 auto; padding: 2rem;">
+    <div class="admin-header"
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem;">
+        <div>
+            <h1 style="font-size: 2.5rem; font-weight: 800; color: #1e293b; margin-bottom: 0.5rem;">Monetization
+                Dashboard</h1>
+            <p style="color: #64748b;">Financial overview and AI consumption monitoring.</p>
+        </div>
+        <div class="actions">
+            <a href="{{ url_for('admin.export_usage') }}" class="btn"
+                style="background: white; border: 1px solid #e2e8f0; padding: 0.75rem 1.5rem; border-radius: 12px; color: #475569; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.2s;">
+                <i class="fas fa-file-export"></i> Export Usage Report
+            </a>
+        </div>
+    </div>
+
+    <!-- Top Stats -->
+    <div class="stats-grid"
+        style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 3rem;">
+        <div class="stat-card"
+            style="background: white; padding: 2rem; border-radius: 24px; border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+            <div style="color: #64748b; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Total MRR</div>
+            <div style="font-size: 2rem; font-weight: 800; color: #1e293b;">${{ "%.2f"|format(mrr) }}</div>
+            <div style="color: #10b981; font-size: 0.75rem; font-weight: 700; margin-top: 0.5rem;"><i
+                    class="fas fa-arrow-up"></i> Monthly recurring</div>
+        </div>
+        <div class="stat-card"
+            style="background: white; padding: 2rem; border-radius: 24px; border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+            <div style="color: #64748b; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Active
+                Subscriptions</div>
+            <div style="font-size: 2rem; font-weight: 800; color: #1e293b;">{{ active_sub_count }}</div>
+            <div style="color: #6366f1; font-size: 0.75rem; font-weight: 700; margin-top: 0.5rem;">Across all tiers
+            </div>
+        </div>
+        <div class="stat-card"
+            style="background: white; padding: 2rem; border-radius: 24px; border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+            <div style="color: #64748b; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">AI Credits Used
+                (7d)</div>
+            <div style="font-size: 2rem; font-weight: 800; color: #1e293b;">
+                {{ usage_by_feature|sum(attribute=2)|default(0, true) }}
+            </div>
+            <div style="color: #64748b; font-size: 0.75rem; font-weight: 700; margin-top: 0.5rem;">Total consumption
+            </div>
+        </div>
+        <div class="stat-card"
+            style="background: white; padding: 2rem; border-radius: 24px; border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+            <div style="color: #64748b; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem;">Platform Health
+            </div>
+            <div style="font-size: 2rem; font-weight: 800; color: #10b981;">Optimal</div>
+            <div style="color: #64748b; font-size: 0.75rem; font-weight: 700; margin-top: 0.5rem;">Billing & AI Engines
+            </div>
+        </div>
+    </div>
+
+    <div class="main-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+        <!-- Usage Breakdown -->
+        <div class="usage-section"
+            style="background: white; border-radius: 24px; padding: 2rem; border: 1px solid #f1f5f9;">
+            <h2 style="font-size: 1.25rem; font-weight: 800; color: #1e293b; margin-bottom: 2rem;">7-Day AI Consumption
+                Trend</h2>
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 1px solid #f1f5f9; text-align: left;">
+                        <th
+                            style="padding: 1rem; color: #64748b; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">
+                            Feature</th>
+                        <th
+                            style="padding: 1rem; color: #64748b; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">
+                            Calls</th>
+                        <th
+                            style="padding: 1rem; color: #64748b; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">
+                            Credits Contributed</th>
+                        <th
+                            style="padding: 1rem; color: #64748b; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">
+                            Current Cost</th>
+                        <th
+                            style="padding: 1rem; color: #64748b; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">
+                            Manage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for feature, calls, credits in usage_by_feature %}
+                    <tr style="border-bottom: 1px solid #f8fafc; transition: background 0.2s;">
+                        <td style="padding: 1rem; font-weight: 600; color: #1e293b;">{{ feature|replace('_', ' ')|title
+                            }}</td>
+                        <td style="padding: 1rem; color: #475569;">{{ calls }}</td>
+                        <td style="padding: 1rem; color: #1e293b; font-weight: 700;">{{ credits or 0 }}</td>
+                        <td style="padding: 1rem;">
+                            <span
+                                style="background: #f1f5f9; padding: 0.25rem 0.75rem; border-radius: 6px; font-weight: 700; font-size: 0.875rem;">{{
+                                current_costs.get(feature, '-') }}</span>
+                        </td>
+                        <td style="padding: 1rem;">
+                            <form action="{{ url_for('admin.update_feature_cost') }}" method="POST"
+                                style="display: flex; gap: 0.5rem; align-items: center;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                                <input type="hidden" name="feature" value="{{ feature }}">
+                                <input type="number" name="cost" value="{{ current_costs.get(feature, 1) }}"
+                                    style="width: 60px; padding: 0.4rem; border: 1px solid #e2e8f0; border-radius: 8px;">
+                                <button type="submit"
+                                    style="background: #1e293b; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.75rem; cursor: pointer;">Save</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Tier Breakdown -->
+        <div class="tier-section"
+            style="background: white; border-radius: 24px; padding: 2rem; border: 1px solid #f1f5f9;">
+            <h2 style="font-size: 1.25rem; font-weight: 800; color: #1e293b; margin-bottom: 2rem;">Subscription Mix</h2>
+            {% for tier, count in sub_counts %}
+            <div style="margin-bottom: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span style="font-weight: 600; color: #475569;">{{ tier }}</span>
+                    <span style="font-weight: 800; color: #1e293b;">{{ count }} users</span>
+                </div>
+                <div style="height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden;">
+                    <div
+                        style="height: 100%; width: {{ (count / active_sub_count * 100)|round }}%; background: #6366f1;">
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 2rem 0;">
+
+            <h3 style="font-size: 1rem; font-weight: 800; color: #1e293b; margin-bottom: 1.5rem;">Top AI Consumers</h3>
+            {% for user_email, credits, calls in top_consumers %}
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <div style="display: flex; flex-direction: column;">
+                    <span style="font-size: 0.875rem; font-weight: 600; color: #1e293b;">{{ user_email|truncate(20)
+                        }}</span>
+                    <span style="font-size: 0.75rem; color: #64748b;">{{ calls }} AI calls</span>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-weight: 800; color: #ef4444;">{{ credits }}</div>
+                    <div style="font-size: 0.65rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">
+                        Credits</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Read-only Activity Logs -->
+    <div class="logs-section"
+        style="background: #1e293b; border-radius: 24px; padding: 2rem; margin-top: 2rem; color: #f8fafc;">
+        <h2 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 2rem;">Live AI Execution Logs (Protected)</h2>
+        <div
+            style="font-family: 'Courier New', Courier, monospace; font-size: 0.875rem; background: #0f172a; padding: 1.5rem; border-radius: 12px; height: 300px; overflow-y: auto;">
+            <p style="color: #6dcfd1; margin-bottom: 0.5rem;">[SYSTEM] Initializing monetization auditing stream...</p>
+            <p style="color: #94a3b8; margin-bottom: 0.5rem;">[AUDIT] Dashboard accessed by user_id: {{ current_user.id
+                }} at {{ now }}</p>
+            <hr style="border: none; border-top: 1px solid #334155; margin: 1rem 0;">
+            {% for feature, calls, credits in usage_by_feature %}
+            <p style="color: #cbd5e1; margin-bottom: 0.25rem;">
+                <span style="color: #fbbf24;">[SUMM]</span> Aggregated {{ calls }} successful calls for feature: {{
+                feature }}
+            </p>
+            {% endfor %}
+            <p style="color: #10b981;">[STATUS] All monetization systems reporting healthy.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

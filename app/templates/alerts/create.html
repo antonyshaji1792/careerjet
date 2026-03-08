@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+        gap: 1rem;
+    }
+
+    .step {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .step-number {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #e5e7eb;
+        color: #6b7280;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .step.active .step-number {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .step-label {
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+
+    .step.active .step-label {
+        color: #3b82f6;
+        font-weight: 600;
+    }
+
+    .info-box {
+        background: #dbeafe;
+        border-left: 4px solid #3b82f6;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border-radius: 8px;
+    }
+
+    .example-box {
+        background: #f9fafb;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        border: 2px dashed #e5e7eb;
+    }
+
+    .help-text {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-top: 0.5rem;
+        line-height: 1.4;
+    }
+
+    .frequency-options {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .frequency-option {
+        position: relative;
+    }
+
+    .frequency-option input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+    }
+
+    .frequency-option label {
+        display: block;
+        padding: 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .frequency-option input[type="radio"]:checked+label {
+        border-color: #3b82f6;
+        background: #dbeafe;
+        color: #1e40af;
+        font-weight: 600;
+    }
+
+    .frequency-option label:hover {
+        border-color: #3b82f6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper" style="max-width: 700px;">
+    <div class="card">
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <h2 style="margin: 0 0 0.5rem 0;">🔔 Create Job Alert</h2>
+            <p style="color: #6b7280; margin: 0;">
+                Get notified when new jobs match your criteria
+            </p>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+            <div class="step active">
+                <div class="step-number">1</div>
+                <span class="step-label">Set Criteria</span>
+            </div>
+            <div style="width: 40px; height: 2px; background: #e5e7eb; margin-top: 15px;"></div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <span class="step-label">Choose Frequency</span>
+            </div>
+            <div style="width: 40px; height: 2px; background: #e5e7eb; margin-top: 15px;"></div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <span class="step-label">Activate</span>
+            </div>
+        </div>
+
+        <!-- Info Box -->
+        <div class="info-box">
+            <h4 style="margin: 0 0 0.5rem 0; color: #1e40af; font-size: 0.875rem; font-weight: 600;">
+                💡 How Job Alerts Work
+            </h4>
+            <p style="margin: 0; color: #1e40af; font-size: 0.875rem; line-height: 1.5;">
+                We'll search for new jobs matching your criteria and send you email notifications. You can create
+                multiple alerts for different job types!
+            </p>
+        </div>
+
+        <!-- Example Box -->
+        <div class="example-box">
+            <h4 style="margin: 0 0 0.5rem 0; color: #1f2937;">📋 Example Alert</h4>
+            <p style="color: #6b7280; font-size: 0.875rem; margin: 0;">
+                <strong>Name:</strong> "Remote Software Engineer Jobs"<br>
+                <strong>Keywords:</strong> "software engineer, developer, python"<br>
+                <strong>Location:</strong> "Remote"<br>
+                <strong>Frequency:</strong> Daily digest at 9 AM
+            </p>
+        </div>
+
+        <!-- Form -->
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <!-- Alert Name -->
+            <div class="form-group">
+                <label for="name" style="font-weight: 600;">
+                    📝 Alert Name
+                    <span style="color: #dc2626;">*</span>
+                </label>
+                <input type="text" id="name" name="name" class="form-control"
+                    placeholder="e.g., Remote Software Engineer Jobs" required>
+                <p class="help-text">
+                    ✓ Give your alert a memorable name so you can identify it later
+                </p>
+            </div>
+
+            <!-- Keywords -->
+            <div class="form-group">
+                <label for="keywords" style="font-weight: 600;">
+                    🔍 Keywords
+                    <span style="color: #dc2626;">*</span>
+                </label>
+                <input type="text" id="keywords" name="keywords" class="form-control"
+                    placeholder="e.g., software engineer, python, react" required>
+                <p class="help-text">
+                    ✓ Separate multiple keywords with commas<br>
+                    ✓ Be specific to get better matches (e.g., "senior python developer" vs just "developer")
+                </p>
+            </div>
+
+            <!-- Location -->
+            <div class="form-group">
+                <label for="location" style="font-weight: 600;">
+                    📍 Location
+                </label>
+                <input type="text" id="location" name="location" class="form-control"
+                    placeholder="e.g., Remote, New York, San Francisco">
+                <p class="help-text">
+                    ✓ Leave blank for all locations<br>
+                    ✓ Use "Remote" for remote-only jobs
+                </p>
+            </div>
+
+            <!-- Platforms -->
+            <div class="form-group">
+                <label style="font-weight: 600;">
+                    🌐 Job Platforms
+                </label>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-top: 0.5rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="platforms" value="linkedin" checked>
+                        <span>LinkedIn</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="platforms" value="indeed">
+                        <span>Indeed</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="platforms" value="glassdoor">
+                        <span>Glassdoor</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="platforms" value="naukri">
+                        <span>Naukri</span>
+                    </label>
+                </div>
+                <p class="help-text">
+                    ✓ Select which platforms to search (at least one required)
+                </p>
+            </div>
+
+            <!-- Frequency -->
+            <div class="form-group">
+                <label style="font-weight: 600;">
+                    ⏰ Notification Frequency
+                    <span style="color: #dc2626;">*</span>
+                </label>
+                <div class="frequency-options">
+                    <div class="frequency-option">
+                        <input type="radio" id="instant" name="frequency" value="instant" required>
+                        <label for="instant">
+                            <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">⚡</div>
+                            <div style="font-weight: 600;">Instant</div>
+                            <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">
+                                As jobs appear
+                            </div>
+                        </label>
+                    </div>
+                    <div class="frequency-option">
+                        <input type="radio" id="daily" name="frequency" value="daily" checked>
+                        <label for="daily">
+                            <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">📅</div>
+                            <div style="font-weight: 600;">Daily</div>
+                            <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">
+                                Once per day
+                            </div>
+                        </label>
+                    </div>
+                    <div class="frequency-option">
+                        <input type="radio" id="weekly" name="frequency" value="weekly">
+                        <label for="weekly">
+                            <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">📆</div>
+                            <div style="font-weight: 600;">Weekly</div>
+                            <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">
+                                Once per week
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                <p class="help-text">
+                    💡 Recommended: Daily for active job searching, Weekly for passive searching
+                </p>
+            </div>
+
+            <!-- Email Enabled -->
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: flex; align-items: start; gap: 0.75rem; cursor: pointer;">
+                    <input type="checkbox" id="email_enabled" name="email_enabled" checked style="margin-top: 0.25rem;">
+                    <span style="font-size: 0.875rem; color: #4b5563; line-height: 1.5;">
+                        <strong>Enable email notifications</strong><br>
+                        <span style="color: #6b7280;">Receive job alerts at your registered email address</span>
+                    </span>
+                </label>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary"
+                style="width: 100%; justify-content: center; font-size: 1rem; padding: 1rem;">
+                🚀 Create Alert & Start Monitoring
+            </button>
+        </form>
+
+        <!-- Tips Section -->
+        <div style="margin-top: 2rem; padding-top: 2rem; border-top: 2px solid #e5e7eb;">
+            <h3 style="margin: 0 0 1rem 0; font-size: 1.125rem;">💡 Pro Tips</h3>
+            <ul style="margin: 0; padding-left: 1.5rem; color: #6b7280; font-size: 0.875rem; line-height: 1.8;">
+                <li>Create multiple alerts for different job types or locations</li>
+                <li>Use specific keywords to reduce irrelevant matches</li>
+                <li>Start with daily frequency and adjust based on volume</li>
+                <li>You can edit or pause alerts anytime from the alerts dashboard</li>
+            </ul>
+        </div>
+
+        <!-- Back Link -->
+        <div style="margin-top: 2rem; text-align: center;">
+            <a href="{{ url_for('alerts.index') }}" style="color: #6b7280; text-decoration: none; font-size: 0.875rem;">
+                ← Back to Job Alerts
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Form validation and feedback
+    document.querySelector('form').addEventListener('submit', function (e) {
+        const platforms = document.querySelectorAll('input[name="platforms"]:checked');
+
+        if (platforms.length === 0) {
+            e.preventDefault();
+            alert('⚠️ Please select at least one job platform.');
+            return false;
+        }
+
+        // Show loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '⏳ Creating alert...';
+    });
+</script>
+{% endblock %}

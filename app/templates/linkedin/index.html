@@ -1,0 +1,576 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    .linkedin-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .linkedin-header {
+        background: linear-gradient(135deg, #0077B5 0%, #00A0DC 100%);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .linkedin-header h1 {
+        margin: 0 0 0.5rem 0;
+        font-size: 2.5rem;
+        font-weight: 700;
+    }
+
+    .linkedin-header p {
+        margin: 0;
+        font-size: 1.125rem;
+        opacity: 0.95;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        border: 2px solid #e5e7eb;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        border-color: #0077B5;
+    }
+
+    .stat-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #0077B5;
+        margin: 0;
+    }
+
+    .stat-label {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+
+    .action-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .action-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        border: 2px solid #e5e7eb;
+    }
+
+    .action-card h3 {
+        margin: 0 0 1rem 0;
+        color: #1f2937;
+        font-size: 1.5rem;
+    }
+
+    .action-card p {
+        color: #6b7280;
+        margin-bottom: 1.5rem;
+    }
+
+    .btn-linkedin {
+        background: #0077B5;
+        color: white;
+        border: none;
+        padding: 0.875rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        font-size: 1rem;
+    }
+
+    .btn-linkedin:hover {
+        background: #005885;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 119, 181, 0.3);
+    }
+
+    .btn-secondary {
+        background: white;
+        color: #0077B5;
+        border: 2px solid #0077B5;
+        padding: 0.875rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        font-size: 1rem;
+        margin-top: 0.75rem;
+    }
+
+    .btn-secondary:hover {
+        background: #f0f9ff;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .status-connected {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-disconnected {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .search-form {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        border: 2px solid #e5e7eb;
+        margin-bottom: 2rem;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr auto;
+        gap: 1rem;
+        align-items: end;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 1rem;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #0077B5;
+    }
+
+    @media (max-width: 768px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="linkedin-container">
+    <div class="linkedin-header">
+        <h1>💼 LinkedIn Integration</h1>
+        <p>Automate your LinkedIn job search with Easy Apply</p>
+    </div>
+
+    <!-- Connection Status -->
+    <div style="text-align: center; margin-bottom: 2rem;">
+        {% if credentials and credentials.is_active %}
+        <span class="status-badge status-connected">✓ Connected to LinkedIn</span>
+        <p style="color: #6b7280; margin-top: 0.5rem;">
+            Account: {{ credentials.email }}
+        </p>
+        {% else %}
+        <span class="status-badge status-disconnected">✗ Not Connected</span>
+        <p style="color: #6b7280; margin-top: 0.5rem;">
+            Please add your LinkedIn credentials to get started
+        </p>
+        {% endif %}
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card" onclick="window.location.href='{{ url_for('linkedin.jobs', easy_apply='false') }}'"
+            style="cursor: pointer;">
+            <div class="stat-icon">📊</div>
+            <h2 class="stat-value">{{ linkedin_jobs_count }}</h2>
+            <p class="stat-label">LinkedIn Jobs Scraped</p>
+        </div>
+
+        <div class="stat-card" onclick="window.location.href='{{ url_for('linkedin.jobs', easy_apply='true') }}'"
+            style="cursor: pointer;">
+            <div class="stat-icon">⚡</div>
+            <h2 class="stat-value">{{ easy_apply_count }}</h2>
+            <p class="stat-label">Easy Apply Jobs Available</p>
+        </div>
+
+        <div class="stat-card" onclick="window.location.href='{{ url_for('alerts.index') }}'"
+            style="cursor: pointer; border-color: #6366f1;">
+            <div class="stat-icon">🔔</div>
+            <h2 class="stat-value" style="color: #6366f1;">{{ alerts_count }}</h2>
+            <p class="stat-label">Active Job Alerts</p>
+        </div>
+    </div>
+
+    <!-- Job Search Form -->
+    {% if credentials and credentials.is_active %}
+    <div class="search-form">
+        <h3 style="margin: 0 0 1.5rem 0;">🔍 Search LinkedIn Jobs</h3>
+        <form method="POST" action="{{ url_for('linkedin.scrape_jobs') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="keywords">Keywords</label>
+                    <input type="text" id="keywords" name="keywords" class="form-control"
+                        placeholder="e.g., Software Engineer, Product Manager" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="location">Location</label>
+                    <input type="text" id="location" name="location" class="form-control"
+                        placeholder="e.g., Remote, New York">
+                </div>
+
+                <div class="form-group">
+                    <label for="limit">Limit</label>
+                    <input type="number" id="limit" name="limit" class="form-control" value="25" min="1" max="100">
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn-linkedin" style="margin-top: 0;">
+                        🚀 Scrape Jobs
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- AI Autopilot Section -->
+    {% if credentials and credentials.is_active %}
+    <div class="action-card"
+        style="margin-bottom: 2rem; border: 2px solid #6366f1; background: linear-gradient(to right, #ffffff, #f5f3ff);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+            <div>
+                <h3 style="color: #4338ca; display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                    🤖 AI Autopilot Mode
+                    {% if schedule and schedule.is_autopilot_enabled %}
+                    <span
+                        style="font-size: 0.75rem; background: #10b981; color: white; padding: 0.25rem 0.75rem; border-radius: 99px; font-weight: 700;">FULLY
+                        AUTOMATED</span>
+                    {% else %}
+                    <span
+                        style="font-size: 0.75rem; background: #e0e7ff; color: #4338ca; padding: 0.25rem 0.75rem; border-radius: 99px; font-weight: 700;">NEW</span>
+                    {% endif %}
+                </h3>
+                <p style="margin: 0.5rem 0 0 0; color: #6b7280; font-size: 0.9375rem;">
+                    Automatically scrape jobs from your alerts and apply on your behalf.
+                </p>
+            </div>
+            <div id="autopilotBadge" class="status-badge" style="background: #f3f4f6; color: #6b7280;">
+                Idle
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+            <div style="padding: 1rem; background: white; border: 1px solid #e0e7ff; border-radius: 8px; text-align: center; cursor: pointer;"
+                onclick="window.location.href='{{ url_for('alerts.index') }}'">
+                <div style="font-size: 0.75rem; color: #6b7280; text-transform: uppercase;">Alerts</div>
+                <div id="autoAlertsCount" style="font-size: 1.25rem; font-weight: 700; color: #4338ca;">{{ alerts_count
+                    }}</div>
+            </div>
+            <div
+                style="padding: 1rem; background: white; border: 1px solid #e0e7ff; border-radius: 8px; text-align: center;">
+                <div style="font-size: 0.75rem; color: #6b7280; text-transform: uppercase;">Found</div>
+                <div id="autoFoundCount" style="font-size: 1.25rem; font-weight: 700; color: #4338ca;">--</div>
+            </div>
+            <div
+                style="padding: 1rem; background: white; border: 1px solid #e0e7ff; border-radius: 8px; text-align: center;">
+                <div style="font-size: 0.75rem; color: #6b7280; text-transform: uppercase;">Applied</div>
+                <div id="autoAppliedCount" style="font-size: 1.25rem; font-weight: 700; color: #10b981;">--</div>
+            </div>
+        </div>
+
+        <form id="autopilotForm" action="{{ url_for('linkedin.run_autopilot') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" id="autopilotBtn" class="btn-linkedin"
+                style="background: #6366f1; display: flex; align-items: center; justify-content: center; gap: 0.75rem;">
+                <i class="fas fa-robot"></i> Run Autopilot Now
+            </button>
+        </form>
+
+        <div id="autopilotLog"
+            style="margin-top: 1rem; max-height: 120px; overflow-y: auto; font-family: monospace; font-size: 0.75rem; background: #1f2937; color: #10b981; padding: 0.75rem; border-radius: 6px; display: none;">
+            <div>> Initializing autonomous seeker...</div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Action Cards -->
+    <div class="action-cards">
+        <div class="action-card">
+            <h3>🔐 LinkedIn Credentials</h3>
+            <p>
+                {% if credentials %}
+                Manage your LinkedIn login credentials for automated job scraping and applications.
+                {% else %}
+                Add your LinkedIn credentials to enable job scraping and Easy Apply automation.
+                {% endif %}
+            </p>
+            <a href="{{ url_for('linkedin.credentials') }}" class="btn-linkedin"
+                style="display: block; text-align: center; text-decoration: none;">
+                {% if credentials %}
+                Update Credentials
+                {% else %}
+                Add Credentials
+                {% endif %}
+            </a>
+            {% if credentials %}
+            <form method="POST" action="{{ url_for('linkedin.test_connection') }}" style="margin-top: 0.75rem;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <button type="submit" class="btn-secondary" id="testConnBtn">
+                    🔄 Test Connection
+                </button>
+            </form>
+            <div id="connectionStatus"
+                style="margin-top: 1rem; padding: 0.75rem; border-radius: 8px; display: none; font-size: 0.875rem; font-weight: 500;">
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="action-card">
+            <h3>📋 View Jobs</h3>
+            <p>Browse all scraped LinkedIn jobs and apply with one click using Easy Apply automation.</p>
+            <a href="{{ url_for('linkedin.jobs') }}" class="btn-linkedin"
+                style="display: block; text-align: center; text-decoration: none;">
+                View LinkedIn Jobs
+            </a>
+        </div>
+
+        <div class="action-card">
+            <h3>🔔 Job Alerts</h3>
+            <p>Create automated search filters to find jobs matching your skills and experience across LinkedIn.</p>
+            <a href="{{ url_for('alerts.index') }}" class="btn-linkedin"
+                style="display: block; text-align: center; text-decoration: none; background: #6366f1;">
+                Manage Job Alerts
+            </a>
+        </div>
+
+        <div class="action-card">
+            <h3>⚙️ Settings</h3>
+            <p>Configure your LinkedIn integration preferences, application limits, and automation rules.</p>
+            <a href="{{ url_for('profile.websites') }}" class="btn-linkedin"
+                style="display: block; text-align: center; text-decoration: none;">
+                Configure Settings
+            </a>
+        </div>
+    </div>
+
+    <!-- How It Works -->
+    <div style="background: white; padding: 2rem; border-radius: 12px; border: 2px solid #e5e7eb;">
+        <h3 style="margin: 0 0 1.5rem 0;">📖 How LinkedIn Integration Works</h3>
+
+        <div style="display: grid; gap: 1.5rem;">
+            <div style="display: flex; gap: 1rem;">
+                <div
+                    style="flex-shrink: 0; width: 40px; height: 40px; background: #0077B5; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                    1</div>
+                <div>
+                    <h4 style="margin: 0 0 0.5rem 0;">Add Your Credentials</h4>
+                    <p style="margin: 0; color: #6b7280;">Securely store your LinkedIn email and password (encrypted).
+                    </p>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem;">
+                <div
+                    style="flex-shrink: 0; width: 40px; height: 40px; background: #0077B5; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                    2</div>
+                <div>
+                    <h4 style="margin: 0 0 0.5rem 0;">Search for Jobs</h4>
+                    <p style="margin: 0; color: #6b7280;">Enter keywords and location to scrape LinkedIn job postings
+                        automatically.</p>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem;">
+                <div
+                    style="flex-shrink: 0; width: 40px; height: 40px; background: #0077B5; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                    3</div>
+                <div>
+                    <h4 style="margin: 0 0 0.5rem 0;">Easy Apply Automation</h4>
+                    <p style="margin: 0; color: #6b7280;">CareerJet automatically applies to Easy Apply jobs on your
+                        behalf.</p>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem;">
+                <div
+                    style="flex-shrink: 0; width: 40px; height: 40px; background: #0077B5; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                    4</div>
+                <div>
+                    <h4 style="margin: 0 0 0.5rem 0;">Track Applications</h4>
+                    <p style="margin: 0; color: #6b7280;">Monitor all your LinkedIn applications in the dashboard.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Test connection handler
+    document.querySelectorAll('form[action*="test_connection"]').forEach(form => {
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const button = this.querySelector('button');
+            const statusDiv = document.getElementById('connectionStatus');
+            const originalText = button.textContent;
+
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+            button.disabled = true;
+
+            // Hide status initially
+            if (statusDiv) {
+                statusDiv.style.display = 'none';
+            }
+
+            try {
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (statusDiv) {
+                    statusDiv.style.display = 'block';
+                    statusDiv.textContent = (result.success ? '✅ ' : '❌ ') + result.message;
+                    statusDiv.style.background = result.success ? '#d1fae5' : '#fee2e2';
+                    statusDiv.style.color = result.success ? '#065f46' : '#991b1b';
+                    statusDiv.style.border = `1px solid ${result.success ? '#34d399' : '#f87171'}`;
+                } else {
+                    // Fallback to alert if div doesn't exist for some reason
+                    alert((result.success ? '✅ ' : '❌ ') + result.message);
+                }
+            } catch (error) {
+                if (statusDiv) {
+                    statusDiv.style.display = 'block';
+                    statusDiv.textContent = '❌ Error testing connection: ' + error.message;
+                    statusDiv.style.background = '#fee2e2';
+                    statusDiv.style.color = '#991b1b';
+                    statusDiv.style.border = '1px solid #f87171';
+                } else {
+                    alert('❌ Error: ' + error.message);
+                }
+            } finally {
+                button.textContent = originalText;
+                button.disabled = false;
+            }
+        });
+    });
+    // Autopilot handler
+    const autopilotForm = document.getElementById('autopilotForm');
+    if (autopilotForm) {
+        autopilotForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const btn = document.getElementById('autopilotBtn');
+            const badge = document.getElementById('autopilotBadge');
+            const log = document.getElementById('autopilotLog');
+            const originalText = btn.innerHTML;
+
+            // UI Feedback
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Autopilot Running...';
+            btn.disabled = true;
+            btn.style.background = '#9ca3af';
+
+            badge.textContent = 'Running';
+            badge.style.background = '#e0e7ff';
+            badge.style.color = '#4338ca';
+
+            log.style.display = 'block';
+            log.innerHTML = '<div>> Initializing autonomous seeker...</div>';
+
+            const addLog = (msg, type = 'info') => {
+                const div = document.createElement('div');
+                div.textContent = `> ${msg}`;
+                if (type === 'success') div.style.color = '#34d399';
+                if (type === 'error') div.style.color = '#f87171';
+                log.appendChild(div);
+                log.scrollTop = log.scrollHeight;
+            };
+
+            try {
+                addLog('Connecting to LinkedIn scraping cluster...');
+
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    addLog('Success: Job cycle completed.', 'success');
+
+                    document.getElementById('autoAlertsCount').textContent = result.data.alerts_processed;
+                    document.getElementById('autoFoundCount').textContent = result.data.jobs_scraped;
+                    document.getElementById('autoAppliedCount').textContent = result.data.applications_sent;
+
+                    result.data.details.forEach(detail => {
+                        const status = detail.status === 'success' ? 'Applied' : 'Failed';
+                        addLog(`${status}: ${detail.job} @ ${detail.company}`, detail.status);
+                    });
+
+                    badge.textContent = 'Completed';
+                    badge.style.background = '#d1fae5';
+                    badge.style.color = '#065f46';
+                } else {
+                    addLog('Error: ' + result.message, 'error');
+                    badge.textContent = 'Failed';
+                    badge.style.border = '1px solid #f87171';
+                }
+            } catch (error) {
+                addLog('System Error: ' + error.message, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                btn.style.background = '#6366f1';
+            }
+        });
+    }
+</script>
+{% endblock %}

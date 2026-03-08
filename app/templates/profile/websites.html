@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    .websites-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .websites-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .platform-card {
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 1.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .platform-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        border-color: #6366f1;
+    }
+
+    .platform-card.selected {
+        border-color: #6366f1;
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%);
+    }
+
+    .platform-card.selected::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    }
+
+    .platform-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+    }
+
+    .platform-icon {
+        font-size: 2rem;
+        margin-right: 0.75rem;
+    }
+
+    .platform-name {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1f2937;
+        flex: 1;
+    }
+
+    .checkbox-wrapper {
+        position: relative;
+    }
+
+    .platform-checkbox {
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        accent-color: #6366f1;
+    }
+
+    .platform-status {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-top: 0.5rem;
+    }
+
+    .platform-card.selected .platform-status {
+        color: #6366f1;
+        font-weight: 500;
+    }
+
+    .select-all-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: white;
+        padding: 1.25rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        border: 2px solid #e5e7eb;
+    }
+
+    .select-all-label {
+        font-weight: 600;
+        color: #1f2937;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        cursor: pointer;
+    }
+
+    .stats {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .stats h3 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .stats p {
+        margin: 0.5rem 0 0 0;
+        opacity: 0.9;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn-save {
+        flex: 1;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-reset {
+        background: white;
+        color: #6b7280;
+        border: 2px solid #e5e7eb;
+        padding: 1rem 2rem;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-reset:hover {
+        border-color: #6366f1;
+        color: #6366f1;
+    }
+
+    .page-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .page-header h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        color: #6b7280;
+        font-size: 1.125rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="websites-container">
+    <div class="page-header">
+        <h2>🌐 Job Platform Preferences</h2>
+        <p>Select the websites where you want CareerJet to apply on your behalf</p>
+    </div>
+
+    <div class="stats">
+        <h3 id="selected-count">{{ enabled_platforms|length }}</h3>
+        <p>Platform(s) Selected</p>
+    </div>
+
+    <form method="POST" id="websites-form">
+        <div class="select-all-container">
+            <label class="select-all-label">
+                <input type="checkbox" id="select-all" class="platform-checkbox">
+                <span>Select All Platforms</span>
+            </label>
+            <span id="selection-text" style="color: #6b7280; font-size: 0.875rem;"></span>
+        </div>
+
+        <div class="websites-grid">
+            {% for platform in platforms %}
+            <div class="platform-card {% if platform.name in enabled_platforms %}selected{% endif %}" 
+                 data-platform="{{ platform.name }}">
+                <div class="platform-header">
+                    <div style="display: flex; align-items: center; flex: 1;">
+                        <span class="platform-icon">{{ platform.icon }}</span>
+                        <span class="platform-name">{{ platform.name }}</span>
+                    </div>
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" 
+                               name="platforms" 
+                               value="{{ platform.name }}" 
+                               class="platform-checkbox platform-check"
+                               {% if platform.name in enabled_platforms %}checked{% endif %}>
+                    </div>
+                </div>
+                <div class="platform-status">
+                    <span class="status-text">
+                        {% if platform.name in enabled_platforms %}
+                            ✓ Enabled
+                        {% else %}
+                            ○ Disabled
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="action-buttons">
+            <button type="button" class="btn-reset" onclick="resetForm()">Reset to Default</button>
+            <button type="submit" class="btn-save">💾 Save Preferences</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Update card selection state
+    function updateCardState(card, checkbox) {
+        if (checkbox.checked) {
+            card.classList.add('selected');
+            card.querySelector('.status-text').textContent = '✓ Enabled';
+        } else {
+            card.classList.remove('selected');
+            card.querySelector('.status-text').textContent = '○ Disabled';
+        }
+        updateStats();
+    }
+
+    // Update statistics
+    function updateStats() {
+        const checkedCount = document.querySelectorAll('.platform-check:checked').length;
+        const totalCount = document.querySelectorAll('.platform-check').length;
+        document.getElementById('selected-count').textContent = checkedCount;
+        document.getElementById('selection-text').textContent = `${checkedCount} of ${totalCount} selected`;
+        
+        // Update select all checkbox
+        const selectAll = document.getElementById('select-all');
+        selectAll.checked = checkedCount === totalCount;
+        selectAll.indeterminate = checkedCount > 0 && checkedCount < totalCount;
+    }
+
+    // Card click handler
+    document.querySelectorAll('.platform-card').forEach(card => {
+        card.addEventListener('click', function(e) {
+            if (e.target.type !== 'checkbox') {
+                const checkbox = this.querySelector('.platform-check');
+                checkbox.checked = !checkbox.checked;
+                updateCardState(this, checkbox);
+            }
+        });
+    });
+
+    // Checkbox change handler
+    document.querySelectorAll('.platform-check').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const card = this.closest('.platform-card');
+            updateCardState(card, this);
+        });
+    });
+
+    // Select all handler
+    document.getElementById('select-all').addEventListener('change', function() {
+        const isChecked = this.checked;
+        document.querySelectorAll('.platform-check').forEach(checkbox => {
+            checkbox.checked = isChecked;
+            const card = checkbox.closest('.platform-card');
+            updateCardState(card, checkbox);
+        });
+    });
+
+    // Reset form
+    function resetForm() {
+        document.querySelectorAll('.platform-check').forEach(checkbox => {
+            checkbox.checked = true;
+            const card = checkbox.closest('.platform-card');
+            updateCardState(card, checkbox);
+        });
+    }
+
+    // Initialize stats on page load
+    updateStats();
+</script>
+{% endblock %}

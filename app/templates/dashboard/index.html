@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-header"
+    style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+    <h1>Welcome, {{ current_user.email.split('@')[0] }}!</h1>
+    <div class="actions">
+        <button class="btn btn-primary" onclick="window.location.reload();">
+            <i class="fas fa-sync"></i> Refresh Data
+        </button>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon icon-blue"><i class="fas fa-bell"></i></div>
+        <div class="stat-info">
+            <h3>Active Alerts</h3>
+            <p>{{ active_alerts }}</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon icon-purple"><i class="fas fa-bolt"></i></div>
+        <div class="stat-info">
+            <h3>Matches</h3>
+            <p>{{ matching_jobs }}</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon icon-green"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-info">
+            <h3>Applied</h3>
+            <p>{{ applied_jobs }}</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon icon-orange"><i class="fas fa-calendar-alt"></i></div>
+        <div class="stat-info">
+            <h3>Scheduled</h3>
+            <p>{{ scheduled_jobs }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="padding: 0;">
+    <div
+        style="padding: 1.5rem; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="margin: 0; font-size: 1.25rem;">Recent Matching Jobs</h2>
+        <a href="{{ url_for('jobs.list_jobs') }}"
+            style="color: var(--primary); font-weight: 600; text-decoration: none; font-size: 0.875rem;">View All</a>
+    </div>
+    <div class="data-table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Job Title</th>
+                    <th>Company</th>
+                    <th>Platform</th>
+                    <th>Match Score</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for match in recent_matches %}
+                <tr>
+                    <td>
+                        <div style="font-weight: 600;">{{ match.job.title }}</div>
+                        <div style="font-size: 0.75rem; color: var(--gray);">{{ match.job.location }}</div>
+                    </td>
+                    <td>{{ match.job.company }}</td>
+                    <td><span class="score-badge" style="background: #e0f2fe; color: #0369a1;">{{ match.job.platform
+                            }}</span></td>
+                    <td>
+                        <span
+                            class="score-badge {% if match.match_score >= 80 %}badge-high{% else %}badge-mid{% endif %}">
+                            {{ match.match_score|int }}%
+                        </span>
+                    </td>
+                    <td>
+                        {% if match.is_applied %}
+                        <span style="color: var(--secondary); font-weight: 600;"><i class="fas fa-check"></i>
+                            Applied</span>
+                        {% elif match.is_scheduled %}
+                        <span style="color: var(--warning); font-weight: 600;"><i class="fas fa-clock"></i>
+                            Scheduled</span>
+                        {% else %}
+                        <span style="color: var(--gray);">Ready</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if not match.is_applied %}
+                        <button class="btn btn-outline btn-sm" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;">Apply
+                            Now</button>
+                        {% else %}
+                        <a href="{{ match.job.job_url }}" target="_blank" class="btn btn-outline btn-sm"
+                            style="padding: 0.4rem 0.8rem; font-size: 0.75rem;">View Original</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 3rem; color: var(--gray);">
+                        No matches found yet. Make sure your profile is updated!
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

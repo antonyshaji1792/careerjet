@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="topup-container" style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
+    <div class="header-section" style="text-align: center; margin-bottom: 4rem; animation: fadeInDown 0.8s ease-out;">
+        <h1
+            style="font-size: 3.5rem; font-weight: 800; background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1rem;">
+            Power Up Your Search
+        </h1>
+        <p style="font-size: 1.2rem; color: #64748b; max-width: 600px; margin: 0 auto;">
+            Need more AI magic? Top up your credits instantly and get back to landing your dream job.
+        </p>
+        <div class="balance-badge"
+            style="display: inline-block; margin-top: 2rem; padding: 0.75rem 1.5rem; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 99px; color: #6366f1; font-weight: 600;">
+            <i class="fas fa-wallet" style="margin-right: 0.5rem;"></i>
+            Current Balance: <span style="font-size: 1.2rem; margin-left: 0.5rem;">{{ balance }} Credits</span>
+        </div>
+    </div>
+
+    <div class="bundles-grid"
+        style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 2rem;">
+        {% for bundle_id, bundle in bundles.items() %}
+        <div class="bundle-card" style="
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 24px;
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            cursor: pointer;
+            {% if bundle_id == 'professional' %}border: 2px solid #6366f1; transform: scale(1.05);{% endif %}
+        " onmouseover="this.style.transform='translateY(-10px) {% if bundle_id == 'professional' %}scale(1.06){% endif %}'"
+            onmouseout="this.style.transform='translateY(0) {% if bundle_id == 'professional' %}scale(1.05){% endif %}'">
+
+            {% if bundle_id == 'professional' %}
+            <div
+                style="position: absolute; top: 20px; right: -35px; background: #6366f1; color: white; padding: 0.5rem 3rem; transform: rotate(45deg); font-size: 0.8rem; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                BEST VALUE
+            </div>
+            {% endif %}
+
+            <div class="bundle-icon" style="margin-bottom: 2rem;">
+                {% if bundle_id == 'starter' %}
+                <div
+                    style="width: 70px; height: 70px; background: #eff6ff; color: #3b82f6; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 1.5rem;">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                {% elif bundle_id == 'professional' %}
+                <div
+                    style="width: 70px; height: 70px; background: #f5f3ff; color: #8b5cf6; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 1.5rem;">
+                    <i class="fas fa-rocket"></i>
+                </div>
+                {% else %}
+                <div
+                    style="width: 70px; height: 70px; background: #fff7ed; color: #f59e0b; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 1.5rem;">
+                    <i class="fas fa-crown"></i>
+                </div>
+                {% endif %}
+            </div>
+
+            <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: #1e293b;">{{ bundle.name }}</h3>
+            <div style="font-size: 3rem; font-weight: 800; color: #1e293b; margin-bottom: 0.5rem;">
+                {{ bundle.credits }}
+                <span style="font-size: 1rem; color: #64748b; font-weight: 500;">Credits</span>
+            </div>
+            <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 2.5rem; line-height: 1.6;">
+                {{ bundle.description }}
+            </p>
+
+            <div style="margin-bottom: 2rem;">
+                <span style="font-size: 1.5rem; font-weight: 700; color: #1e293b;">${{ "%.2f"|format(bundle.price / 100)
+                    }}</span>
+                <span style="color: #64748b;">One-time</span>
+            </div>
+
+            <form action="{{ url_for('subscription.topup_checkout', bundle_id=bundle_id) }}" method="POST">
+                <button type="submit" class="cta-button" style="
+                    width: 100%;
+                    padding: 1.2rem;
+                    border: none;
+                    border-radius: 16px;
+                    font-weight: 700;
+                    font-size: 1rem;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    {% if bundle_id == 'professional' %}
+                    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+                    color: white;
+                    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+                    {% else %}
+                    background: #f1f5f9;
+                    color: #475569;
+                    {% endif %}
+                " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                    Get Credits
+                </button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="security-info" style="text-align: center; margin-top: 4rem; color: #94a3b8; font-size: 0.9rem;">
+        <p><i class="fas fa-lock" style="margin-right: 0.5rem;"></i> Secure payments powered by <strong>Stripe</strong>.
+            Credits are added instantly to your wallet.</p>
+    </div>
+</div>
+
+<style>
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .bundle-card {
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    .checkbox-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 1rem;
+        margin-top: 0.5rem;
+        background: #f8fafc;
+        padding: 1.25rem;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 6px;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+    }
+
+    .checkbox-item:hover {
+        background: white;
+        border-color: #e2e8f0;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .checkbox-item input[type="checkbox"] {
+        width: 1.25rem;
+        height: 1.25rem;
+        cursor: pointer;
+        accent-color: var(--primary);
+        margin: 0;
+    }
+
+    .checkbox-label {
+        margin: 0;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        cursor: pointer;
+        color: #334155;
+        user-select: none;
+    }
+
+    .time-window-box {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        background: #f8fafc;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .time-field {
+        flex: 1;
+    }
+
+    .time-separator {
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    /* Toggle Switch */
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 26px;
+    }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #cbd5e1;
+        transition: .4s;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+    }
+
+    input:checked+.slider {
+        background-color: var(--primary);
+    }
+
+    input:focus+.slider {
+        box-shadow: 0 0 1px var(--primary);
+    }
+
+    input:checked+.slider:before {
+        transform: translateX(24px);
+    }
+
+    .slider.round {
+        border-radius: 34px;
+    }
+
+    .slider.round:before {
+        border-radius: 50%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper" style="max-width: 650px;">
+    <div class="card">
+        <h2 style="text-align: center;">Auto-Apply Schedule</h2>
+        <p style="color: var(--gray); text-align: center; margin-bottom: 2rem;">Configure when CareerJet should
+            automatically apply for matching jobs on your behalf.</p>
+
+        <form method="POST">
+            {{ form.hidden_tag() }}
+
+            <div class="form-group"
+                style="background: #eef2ff; padding: 1.5rem; border-radius: 12px; border: 1px solid #c7d2fe; margin-bottom: 2rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <h3 style="font-size: 1.125rem; margin-bottom: 0.25rem; color: #3730a3;">
+                            <i class="fas fa-robot"></i> {{ form.is_autopilot_enabled.label.text }}
+                        </h3>
+                        <p style="font-size: 0.8125rem; color: #4338ca; margin: 0;">System will search and apply for
+                            jobs automatically.</p>
+                    </div>
+                    <label class="switch">
+                        {{ form.is_autopilot_enabled() }}
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                {{ form.daily_search_limit.label(style="font-weight: 600;") }}
+                {{ form.daily_search_limit(class="form-control", type="number", placeholder="e.g. 20") }}
+                <p style="font-size: 0.75rem; color: var(--gray); margin-top: 0.25rem;">Maximum number of jobs to
+                    scrape/search per day.</p>
+            </div>
+
+            <div class="form-group" style="margin-top: 1.5rem;">
+                {{ form.daily_limit.label(style="font-weight: 600;") }}
+                {{ form.daily_limit(class="form-control", type="number", placeholder="e.g. 5") }}
+                <p style="font-size: 0.75rem; color: var(--gray); margin-top: 0.25rem;">Maximum applications per day.
+                </p>
+            </div>
+
+            <div class="form-group" style="margin-top: 1.5rem;">
+                {{ form.preferred_days.label(style="font-weight: 600;") }}
+                <div class="checkbox-grid">
+                    {% for subfield in form.preferred_days %}
+                    <label class="checkbox-item" for="{{ subfield.id }}">
+                        {{ subfield() }}
+                        <span class="checkbox-label">{{ subfield.label.text }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+                <p style="font-size: 0.75rem; color: var(--gray); margin-top: 0.5rem;">Select days of the week for
+                    automation to run.</p>
+            </div>
+
+            <div class="form-group" style="margin-top: 1.5rem;">
+                <label style="font-weight: 600;">Preferred Time Window</label>
+                <div class="time-window-box">
+                    <div class="time-field">
+                        {{ form.start_time(class="form-control", type="time") }}
+                    </div>
+                    <div class="time-separator">to</div>
+                    <div class="time-field">
+                        {{ form.end_time(class="form-control", type="time") }}
+                    </div>
+                </div>
+                <p style="font-size: 0.75rem; color: var(--gray); margin-top: 0.5rem;">The specific time window during
+                    which applications will be sent.</p>
+            </div>
+
+            <div class="form-group" style="margin-top: 1.5rem;">
+                {{ form.match_threshold.label(style="font-weight: 600;") }}
+                {{ form.match_threshold(class="form-control", type="number", min="0", max="100") }}
+                <p style="font-size: 0.75rem; color: var(--gray); margin-top: 0.25rem;">Minimum compatibility score
+                    (0-100) required to trigger auto-apply.</p>
+            </div>
+
+            <div style="margin-top: 2rem;">
+                {{ form.submit(class="btn btn-primary", style="width: 100%; justify-content: center; height: 3.5rem;
+                font-size: 1.125rem;") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

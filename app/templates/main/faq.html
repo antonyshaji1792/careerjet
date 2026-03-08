@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    .faq-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 4rem 1rem;
+    }
+
+    .faq-header {
+        text-align: center;
+        margin-bottom: 4rem;
+    }
+
+    .faq-header h1 {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #1a1f2c 0%, #0077b5 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .faq-header p {
+        font-size: 1.25rem;
+        color: #64748b;
+    }
+
+    .faq-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .faq-item {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .faq-item:hover {
+        border-color: #0077b5;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .faq-question {
+        padding: 1.5rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .faq-question h3 {
+        margin: 0;
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1a1f2c;
+    }
+
+    .faq-toggle {
+        width: 32px;
+        height: 32px;
+        background: #f1f5f9;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #64748b;
+        transition: all 0.3s ease;
+    }
+
+    .faq-item.active .faq-toggle {
+        background: #0077b5;
+        color: white;
+        transform: rotate(180deg);
+    }
+
+    .faq-answer {
+        padding: 0 2rem;
+        max-height: 0;
+        overflow: hidden;
+        transition: all 0.5s cubic-bezier(0, 1, 0, 1);
+        color: #475569;
+        line-height: 1.6;
+        font-size: 1rem;
+    }
+
+    .faq-item.active .faq-answer {
+        max-height: 1000px;
+        padding-bottom: 1.5rem;
+        transition: all 0.5s cubic-bezier(1, 0, 1, 0);
+    }
+
+    .faq-category {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #0077b5;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .contact-cta {
+        margin-top: 4rem;
+        text-align: center;
+        background: #f8fafc;
+        padding: 3rem;
+        border-radius: 24px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .contact-cta h2 {
+        margin-bottom: 1rem;
+        font-size: 1.5rem;
+    }
+
+    .btn-contact {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: #0077b5;
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+    }
+
+    .btn-contact:hover {
+        background: #005885;
+        box-shadow: 0 8px 20px rgba(0, 119, 181, 0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="faq-container">
+    <div class="faq-header">
+        <h1>Frequently Asked Questions</h1>
+        <p>Everything you need to know about the CareerJet Autopilot and automation system.</p>
+    </div>
+
+    <div class="faq-list">
+        <!-- Automation & Autopilot -->
+        <div class="faq-item">
+            <div class="faq-question">
+                <div>
+                    <span class="faq-category">Automation</span>
+                    <h3>How does the AI Autopilot work?</h3>
+                </div>
+                <div class="faq-toggle"><i class="fas fa-chevron-down"></i></div>
+            </div>
+            <div class="faq-answer">
+                Our Autopilot uses a combination of scheduled scrapers and intelligent submission bots. It checks your
+                "Job Alerts" periodically, matches findings against your profile, and automatically submits "Easy Apply"
+                applications for jobs that meet your Match Score threshold. It even uses AI to answer complex form
+                questions during the submission process.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                <div>
+                    <span class="faq-category">Security</span>
+                    <h3>Is it safe to store my LinkedIn credentials?</h3>
+                </div>
+                <div class="faq-toggle"><i class="fas fa-chevron-down"></i></div>
+            </div>
+            <div class="faq-answer">
+                Security is our top priority. Your password is never stored in plain text. We use AES-256 encryption via
+                the Fernet protocol to encrypt your credentials before they ever hit our database. Only the background
+                automation system has the temporary permission to decrypt them for the sole purpose of logging in to
+                perform your requested searches.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                <div>
+                    <span class="faq-category">Matching</span>
+                    <h3>How is the Match Score calculated?</h3>
+                </div>
+                <div class="faq-toggle"><i class="fas fa-chevron-down"></i></div>
+            </div>
+            <div class="faq-answer">
+                The Matching Engine analyzes four key pillars:
+                <ul>
+                    <li><strong>Skills (40%)</strong>: Word-level matching between your profile and the job description.
+                    </li>
+                    <li><strong>Roles (30%)</strong>: Compatibility between your career goals and the job title.</li>
+                    <li><strong>Location (20%)</strong>: Geographic alignment with your preferences.</li>
+                    <li><strong>Experience (10%)</strong>: Check against years of experience requirements found in the
+                        text.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                <div>
+                    <span class="faq-category">Automation</span>
+                    <h3>What is "Easy Apply"?</h3>
+                </div>
+                <div class="faq-toggle"><i class="fas fa-chevron-down"></i></div>
+            </div>
+            <div class="faq-answer">
+                Easy Apply is a LinkedIn-specific feature that allows for streamlined applications without redirecting
+                to a third-party ATS (Applicant Tracking System). CareerJet specifically targets these roles because
+                they allow our AI to represent you accurately and complete the application in seconds.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                <div>
+                    <span class="faq-category">Account Safety</span>
+                    <h3>Will LinkedIn ban my account for using this?</h3>
+                </div>
+                <div class="faq-toggle"><i class="fas fa-chevron-down"></i></div>
+            </div>
+            <div class="faq-answer">
+                We have built-in safety features to mimic human behavior. Our bots use randomized "jitter" (waiting
+                between actions), respect daily submission limits, and operate during standard human hours. However, we
+                recommend setting a conservative daily limit (e.g., 5-10 applications) to ensure your account activity
+                remains within normal patterns.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                <div>
+                    <span class="faq-category">Profile</span>
+                    <h3>Can I use multiple resumes?</h3>
+                </div>
+                <div class="faq-toggle"><i class="fas fa-chevron-down"></i></div>
+            </div>
+            <div class="faq-answer">
+                Currently, CareerJet uses your designated "Primary Resume" for all automated applications. You can
+                upload multiple resumes in the Profile section, but you must select one as the primary to be used by the
+                Autopilot.
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    <div>
+                        <span class="faq-category">Career Tools</span>
+                        <h3>How does the AI Video Interview work?</h3>
+                    </div>
+                    <div class="faq-toggle"><i class="fas fa-chevron-down"></i></div>
+                </div>
+                <div class="faq-answer">
+                    Our AI Video Interview uses advanced LLMs and emotion analysis to simulate a real interviewer.
+                    You'll
+                    face industry-specific questions, and the AI will analyze your verbal response, body language, and
+                    confidence, providing you with a detailed feedback report and improvement tips.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <div>
+                        <span class="faq-category">Career Tools</span>
+                        <h3>What makes the Resume Builder special?</h3>
+                    </div>
+                    <div class="faq-toggle"><i class="fas fa-chevron-down"></i></div>
+                </div>
+                <div class="faq-answer">
+                    Unlike traditional builders, ours is integrated with our Matching Engine. It scores your resume
+                    against
+                    live ATS (Applicant Tracking System) rules and suggests specific improvements to help you bypass
+                    automated filters at top-tier companies. It even helps you tailor your resume for specific job
+                    descriptions in one click.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="contact-cta">
+        <h2>Still have questions?</h2>
+        <p>We're here to help you accelerate your career transition.</p>
+        <a href="mailto:support@careerjet.ai" class="btn-contact">
+            <i class="far fa-envelope"></i> Contact Support
+        </a>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.faq-item').forEach(item => {
+        item.querySelector('.faq-question').addEventListener('click', () => {
+            const isActive = item.classList.contains('active');
+
+            // Close all others
+            document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
+
+            // Toggle current
+            if (!isActive) {
+                item.classList.add('active');
+            }
+        });
+    });
+</script>
+{% endblock %}

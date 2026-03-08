@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .skill-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .gap-verified {
+        border: 2px solid var(--bs-success);
+    }
+
+    .gap-warning {
+        border: 2px solid var(--bs-warning);
+    }
+
+    .gap-unproven {
+        border: 2px solid var(--bs-danger);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Header: Verdict & Identity -->
+    <div class="col-12">
+        <div
+            class="card shadow-sm border-0 bg-primary text-white p-4 d-flex flex-row justify-content-between align-items-center">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-1">
+                        <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}"
+                                class="text-white opacity-75 text-decoration-none">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('interview.index') }}"
+                                class="text-white opacity-75 text-decoration-none">Interviews</a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">Session Report</li>
+                    </ol>
+                </nav>
+                <h2 class="fw-bold mb-0">Performance Analysis: {{ report.job_title }}</h2>
+                <div class="d-flex align-items-center gap-2 mt-2">
+                    <span class="badge bg-white text-primary">Persona: {{ report.persona | capitalize }}</span>
+                    <span class="opacity-75"><i class="far fa-calendar-alt me-1"></i> {{ report.created_at.strftime('%b
+                        %d, %Y') }}</span>
+                </div>
+            </div>
+            <div class="text-end">
+                <div class="display-5 fw-bold">{{ report.overall_score }}%</div>
+                <div class="small fw-bold text-uppercase opacity-75">Readiness Score</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Column 1: Core Metrics -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <h5 class="fw-bold mb-4">Technical Proficiency</h5>
+                <canvas id="skillRadar" height="300"></canvas>
+
+                <hr class="my-4">
+
+                <h5 class="fw-bold mb-3">Communication Signals</h5>
+                <div class="mb-3">
+                    <label class="d-flex justify-content-between small text-muted mb-1">
+                        <span>Pacing (WPM)</span>
+                        <span class="fw-bold text-dark">{{ report.metrics.pacing }} WPM</span>
+                    </label>
+                    {% set pacing_w = (report.metrics.pacing / 2) | int %}
+                    <div class="progress metric-progress">
+                        <div class="progress-bar bg-info metric-bar js-width" data-width="{{ pacing_w }}"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="d-flex justify-content-between small text-muted mb-1">
+                        <span>Confidence Level</span>
+                        <span class="fw-bold text-dark">{{ report.metrics.confidence }}%</span>
+                    </label>
+                    {% set conf_w = report.metrics.confidence | int %}
+                    <div class="progress metric-progress">
+                        <div class="progress-bar bg-success metric-bar js-width" data-width="{{ conf_w }}"></div>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <label class="d-flex justify-content-between small text-muted mb-1">
+                        <span>filler Words</span>
+                        <span class="fw-bold text-dark">{{ report.metrics.filler_count }} used</span>
+                    </label>
+                    {% set filler_w = [100, report.metrics.filler_count * 10] | min %}
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-warning js-width" data-width="{{ filler_w }}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Column 2: Resume Alignment & Skills -->
+    <div class="col-lg-8">
+        <div class="row g-4">
+            <!-- Resume Alignment -->
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-4"><i class="fas fa-file-contract text-primary me-2"></i> Resume Claim
+                            Verification</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle border-top-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Skill / Claim</th>
+                                        <th>Self-Rating</th>
+                                        <th>Interview Evidence</th>
+                                        <th>Verdict</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for claim in report.claims %}
+                                    <tr>
+                                        <td><strong>{{ claim.skill }}</strong></td>
+                                        <td><span class="text-muted">{{ claim.claimed_level }}</span></td>
+                                        <td>
+                                            <div class="progress" style="height: 8px; width: 80px;">
+                                                <div class="progress-bar bg-primary js-width"
+                                                    data-width="{{ claim.actual_score }}"></div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if claim.actual_score >= 80 %}
+                                            <span
+                                                class="badge bg-success-subtle text-success border border-success">Verified</span>
+                                            {% elif claim.actual_score >= 50 %}
+                                            <span
+                                                class="badge bg-warning-subtle text-warning border border-warning">Developing</span>
+                                            {% else %}
+                                            <span
+                                                class="badge bg-danger-subtle text-danger border border-danger">Unproven</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Feedback -->
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3 text-success">Key Strengths</h5>
+                        <ul class="list-unstyled">
+                            {% for strength in report.strengths %}
+                            <li class="mb-3 d-flex gap-2">
+                                <i class="fas fa-check-circle text-success mt-1"></i>
+                                <span>{{ strength }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3 text-warning">Growth Opportunities</h5>
+                        <ul class="list-unstyled">
+                            {% for gap in report.gaps %}
+                            <li class="mb-3 d-flex gap-2">
+                                <i class="fas fa-lightbulb text-warning mt-1"></i>
+                                <span>{{ gap }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom: Recording & Timeline -->
+    <div class="col-12 mb-5">
+        {% if report.video_url %}
+        <div class="card shadow-sm border-0 mb-5 overflow-hidden">
+            <div class="card-header bg-dark text-white p-3">
+                <h5 class="mb-0"><i class="fas fa-play-circle me-2"></i> Session Recording</h5>
+            </div>
+            <div class="card-body p-0 bg-black text-center">
+                <video src="{{ report.video_url }}" controls class="w-100 shadow" style="max-height: 500px;"></video>
+            </div>
+        </div>
+        {% endif %}
+
+        <h4 class="fw-bold mb-4">Interview Timeline</h4>
+        {% for turn in report.turns %}
+        <div class="card shadow-sm border-0 mb-3 overflow-hidden">
+            <div class="card-body p-4">
+                <div class="row">
+                    <div class="col-md-5 border-end">
+                        <span class="text-uppercase small fw-bold text-muted d-block mb-1">Question {{ loop.index
+                            }}</span>
+                        <p class="fw-bold mb-3">{{ turn.question }}</p>
+                        <div class="bg-light p-3 rounded small italic text-muted">
+                            "{{ turn.transcript }}"
+                        </div>
+                    </div>
+                    <div class="col-md-7 ps-md-4">
+                        <span class="text-uppercase small fw-bold text-muted d-block mb-1">AI Feedback</span>
+                        <p class="mb-3">{{ turn.feedback }}</p>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for tag in turn.tags %}
+                            <span class="badge bg-light text-dark border">{{ tag }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script id="radar-data" type="application/json">
+    {
+        "labels": {{ report.radar_data.labels | tojson }},
+        "values": {{ report.radar_data.values | tojson }}
+    }
+</script>
+
+<script>
+    const radarData = JSON.parse(document.getElementById('radar-data').textContent);
+    const radarCtx = document.getElementById('skillRadar').getContext('2d');
+
+    new Chart(radarCtx, {
+        type: 'radar',
+        data: {
+            labels: radarData.labels,
+            datasets: [{
+                label: 'Performance',
+                data: radarData.values,
+                fill: true,
+                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                borderColor: 'rgb(59, 130, 246)',
+                pointBackgroundColor: 'rgb(59, 130, 246)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgb(59, 130, 246)'
+            }]
+        },
+        options: {
+            elements: { line: { borderWidth: 3 } },
+            scales: {
+                r: {
+                    angleLines: { display: false },
+                    suggestMin: 0,
+                    suggestMax: 100
+                }
+            }
+        }
+    });
+    // Apply dynamic widths
+    document.querySelectorAll('.js-width').forEach(el => {
+        const width = el.dataset.width || 0;
+        el.style.width = width + '%';
+    });
+</script>
+
+<style>
+    .metric-progress {
+        height: 6px;
+    }
+
+    .metric-bar {
+        transition: width 0.6s ease;
+    }
+</style>
+{% endblock %}

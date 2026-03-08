@@ -1,0 +1,10 @@
+John Doe
+Senior Software Engineer
+
+Experience: 8 years
+
+Skills: Python, Flask, AWS, React, PostgreSQL
+
+Preferred Roles: Senior Backend Engineer, Lead Developer
+
+Location: San Francisco, Remote

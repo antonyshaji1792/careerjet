@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="resume-v2-container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h1 class="fw-bold text-gradient-primary">Resume Intelligence</h1>
+            <p class="text-muted">Manage your primary resume and job-specific optimizations.</p>
+        </div>
+        <div>
+            <button class="btn btn-primary-gradient shadow-sm rounded-pill px-4"
+                onclick="document.getElementById('fileInput').click()">
+                <i class="fas fa-upload me-2"></i>Upload Base Resume
+            </button>
+            <input type="file" id="fileInput" class="d-none" onchange="uploadResume(this)">
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Sidebar: Resume List -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-white border-0 py-3 px-4">
+                    <h5 class="mb-0 fw-bold">My Resumes</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush" id="resumeList">
+                        {% for resume in resumes %}
+                        <div class="list-group-item list-group-item-action border-0 py-3 px-4 cursor-pointer {% if resume.is_primary %}bg-primary-soft{% endif %}"
+                            onclick="selectResume({{ resume.id }})">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1 fw-bold">{{ resume.title }}</h6>
+                                    <span
+                                        class="badge {% if resume.is_primary %}bg-primary{% else %}bg-secondary{% endif %} rounded-pill small">
+                                        {{ "Primary" if resume.is_primary else "Archive" }}
+                                    </span>
+                                </div>
+                                <small class="text-muted">{{ resume.updated_at.strftime('%b %d') }}</small>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="p-5 text-center text-muted">
+                            <i class="fas fa-file-invoice fa-3x mb-3 opacity-25"></i>
+                            <p>No resumes uploaded yet.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detail Workspace -->
+        <div class="col-lg-8">
+            <div id="resumeWorkspace" class="card border-0 shadow-sm rounded-4 h-100 min-vh-75">
+                <div class="card-body p-5 d-flex flex-column justify-content-center align-items-center text-center empty-state"
+                    id="noSelection">
+                    <div class="icon-pulse mb-4">
+                        <i class="fas fa-magic fa-3x text-primary"></i>
+                    </div>
+                    <h3>Intelligent Orchestration</h3>
+                    <p class="text-muted max-w-400">Select a resume from the list to view its version history or start a
+                        new AI optimization.</p>
+                </div>
+
+                <div class="card-body p-4 d-none" id="resumeDetail">
+                    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                        <h4 id="detailTitle" class="fw-bold mb-0"></h4>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="showVersions()">
+                                <i class="fas fa-history me-1"></i> Versions
+                            </button>
+                            <button class="btn btn-primary btn-sm rounded-pill px-3" onclick="triggerOptimization()">
+                                <i class="fas fa-bolt me-1"></i> Tailor for Job
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="versionHistory" class="mb-4 d-none">
+                        <h6 class="fw-bold text-uppercase small text-muted mb-3">Optimization History</h6>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle border-0">
+                                <thead class="table-light border-0">
+                                    <tr>
+                                        <th>Ver</th>
+                                        <th>Target Job</th>
+                                        <th>ATS Score</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="versionTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="resumePreview" class="bg-light p-4 rounded-3 border">
+                        <!-- Content will be injected through AJAX -->
+                        <div id="previewLoader" class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status"></div>
+                        </div>
+                        <div id="previewContent" class="small"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-primary-soft {
+        background-color: #f0f7ff !important;
+        border-left: 4px solid #3b82f6 !important;
+    }
+
+    .text-gradient-primary {
+        background: linear-gradient(135deg, #1e293b 0%, #3b82f6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .btn-primary-gradient {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        color: white;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        color: white;
+    }
+
+    .cursor-pointer {
+        cursor: pointer;
+    }
+
+    .min-vh-75 {
+        min-height: 75vh;
+    }
+
+    .icon-pulse {
+        animation: pulse-blue 2s infinite;
+    }
+
+    @keyframes pulse-blue {
+        0% {
+            opacity: 0.5;
+            transform: scale(1);
+        }
+
+        50% {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        100% {
+            opacity: 0.5;
+            transform: scale(1);
+        }
+    }
+</style>
+
+<script>
+    let selectedResumeId = null;
+
+    async function uploadResume(input) {
+        if (!input.files.length) return;
+        const formData = new FormData();
+        formData.append('file', input.files[0]);
+        formData.append('csrf_token', '{{ csrf_token() }}');
+
+        try {
+            const resp = await fetch('/resume/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const res = await resp.json();
+            if (res.success) {
+                location.reload();
+            } else {
+                alert(res.message);
+            }
+        } catch (e) {
+            alert("Upload failed.");
+        }
+    }
+
+    async function selectResume(id) {
+        selectedResumeId = id;
+        document.getElementById('noSelection').classList.add('d-none');
+        document.getElementById('resumeDetail').classList.remove('d-none');
+        document.getElementById('versionHistory').classList.add('d-none');
+
+        // Fetch detail
+        const resp = await fetch(`/resume/${id}`);
+        const res = await resp.json();
+        if (res.success) {
+            document.getElementById('detailTitle').innerText = res.data.title;
+            document.getElementById('previewContent').innerHTML = `<pre>${JSON.stringify(JSON.parse(res.data.content_json), null, 2)}</pre>`;
+            document.getElementById('previewLoader').classList.add('d-none');
+        }
+    }
+
+    async function showVersions() {
+        if (!selectedResumeId) return;
+        const hist = document.getElementById('versionHistory');
+        hist.classList.toggle('d-none');
+
+        if (!hist.classList.contains('d-none')) {
+            const resp = await fetch(`/resume/versions/${selectedResumeId}`);
+            const res = await resp.json();
+            const tbody = document.getElementById('versionTableBody');
+            tbody.innerHTML = res.versions.map(v => `
+            <tr>
+                <td>v${v.version_number}</td>
+                <td>${v.change_log || 'Optimized'}</td>
+                <td><span class="badge bg-success-soft text-success">${v.ats_score}%</span></td>
+                <td>${new Date(v.created_at).toLocaleDateString()}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-info" onclick="rollbackTo(${v.id})">Rollback</button>
+                </td>
+            </tr>
+        `).join('');
+        }
+    }
+
+    async function rollbackTo(vId) {
+        if (!confirm("Rollback master resume content to this version?")) return;
+        const resp = await fetch(`/resume/rollback/${vId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        });
+        const res = await resp.json();
+        alert(res.message);
+        if (res.success) selectResume(selectedResumeId);
+    }
+
+    function triggerOptimization() {
+        const jobId = prompt("Enter Job ID to optimize for:");
+        if (!jobId) return;
+
+        fetch(`/resume/optimize/${jobId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        }).then(r => r.json()).then(res => {
+            alert(res.message);
+            if (res.success) showVersions();
+        });
+    }
+</script>
+{% endblock %}

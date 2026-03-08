@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    .customize-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .customize-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+
+    .form-panel,
+    .preview-panel {
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 2rem;
+    }
+
+    .preview-panel {
+        position: sticky;
+        top: 2rem;
+        max-height: calc(100vh - 4rem);
+        overflow-y: auto;
+    }
+
+    .panel-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0 0 1.5rem 0;
+        color: #1f2937;
+    }
+
+    .template-preview-content {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 1.5rem;
+        font-family: 'Georgia', serif;
+        line-height: 1.8;
+        color: #1f2937;
+        white-space: pre-wrap;
+    }
+
+    .placeholder {
+        background: #fef3c7;
+        color: #92400e;
+        padding: 0.125rem 0.375rem;
+        border-radius: 4px;
+        font-weight: 600;
+    }
+
+    @media (max-width: 968px) {
+        .customize-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .preview-panel {
+            position: static;
+            max-height: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="customize-container">
+    <div style="margin-bottom: 2rem;">
+        <h1 style="margin: 0 0 0.5rem 0;">✏️ Customize Template: {{ template.name }}</h1>
+        <p style="color: #6b7280; margin: 0;">
+            Fill in the placeholders to personalize your cover letter
+        </p>
+    </div>
+
+    <form method="POST">
+        <div class="customize-grid">
+            <!-- Form Panel -->
+            <div class="form-panel">
+                <h3 class="panel-title">📝 Fill in Details</h3>
+
+                <div class="form-group">
+                    <label for="your_name">Your Name *</label>
+                    <input type="text" id="your_name" name="your_name" class="form-control"
+                        value="{{ current_user.email.split('@')[0].replace('.', ' ').title() if current_user else '' }}"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label for="your_contact">Your Contact (Email/Phone) *</label>
+                    <input type="text" id="your_contact" name="your_contact" class="form-control"
+                        placeholder="email@example.com | (555) 123-4567"
+                        value="{{ current_user.email if current_user else '' }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="job_title">Job Title *</label>
+                    <input type="text" id="job_title" name="job_title" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="company_name">Company Name *</label>
+                    <input type="text" id="company_name" name="company_name" class="form-control" required>
+                </div>
+
+                <!-- Dynamic fields based on template -->
+                {% if template_name == 'professional' %}
+                <div class="form-group">
+                    <label for="years">Years of Experience</label>
+                    <input type="text" id="years" name="years" class="form-control" placeholder="e.g., 5"
+                        value="{{ user_profile.experience if user_profile and user_profile.experience else '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="field">Field/Industry</label>
+                    <input type="text" id="field" name="field" class="form-control"
+                        placeholder="e.g., Software Development">
+                </div>
+
+                <div class="form-group">
+                    <label for="skills">Key Skills</label>
+                    <input type="text" id="skills" name="skills" class="form-control"
+                        placeholder="e.g., Python, React, AWS"
+                        value="{{ user_profile.skills if user_profile and user_profile.skills else '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="previous_company">Previous Company</label>
+                    <input type="text" id="previous_company" name="previous_company" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="achievement">Key Achievement</label>
+                    <textarea id="achievement" name="achievement" class="form-control" rows="2"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="impact">Impact/Result</label>
+                    <textarea id="impact" name="impact" class="form-control" rows="2"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="reason">Why This Company?</label>
+                    <textarea id="reason" name="reason" class="form-control" rows="2"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="industry">Industry Interest</label>
+                    <input type="text" id="industry" name="industry" class="form-control">
+                </div>
+
+                {% elif template_name == 'career_change' %}
+                <div class="form-group">
+                    <label for="previous_field">Previous Field</label>
+                    <input type="text" id="previous_field" name="previous_field" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="new_field">New Field</label>
+                    <input type="text" id="new_field" name="new_field" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="transferable_skills">Transferable Skills</label>
+                    <textarea id="transferable_skills" name="transferable_skills" class="form-control"
+                        rows="2"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="preparation">Learning/Preparation Activities</label>
+                    <textarea id="preparation" name="preparation" class="form-control" rows="2"></textarea>
+                </div>
+
+                {% else %}
+                <!-- Generic fields for other templates -->
+                <div class="form-group">
+                    <label for="years">Years of Experience</label>
+                    <input type="text" id="years" name="years" class="form-control"
+                        value="{{ user_profile.experience if user_profile and user_profile.experience else '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="field">Field/Industry</label>
+                    <input type="text" id="field" name="field" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="skills">Skills</label>
+                    <textarea id="skills" name="skills" class="form-control"
+                        rows="2">{{ user_profile.skills if user_profile and user_profile.skills else '' }}</textarea>
+                </div>
+                {% endif %}
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
+                    💾 Create Cover Letter
+                </button>
+            </div>
+
+            <!-- Preview Panel -->
+            <div class="preview-panel">
+                <h3 class="panel-title">👁️ Preview</h3>
+                <div class="template-preview-content">
+                    {{ template.content }}
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div style="margin-top: 2rem; text-align: center;">
+        <a href="{{ url_for('cover_letters.templates') }}" style="color: #6b7280; text-decoration: none;">
+            ← Back to Templates
+        </a>
+    </div>
+</div>
+{% endblock %}

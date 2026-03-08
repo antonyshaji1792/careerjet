@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    .templates-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .templates-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .template-card {
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .template-card:hover {
+        border-color: #6366f1;
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.15);
+        transform: translateY(-4px);
+    }
+
+    .template-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .template-name {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .template-description {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin: 0 0 1.5rem 0;
+        line-height: 1.6;
+    }
+
+    .template-preview {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        padding: 1rem;
+        font-size: 0.75rem;
+        color: #4b5563;
+        line-height: 1.5;
+        max-height: 150px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+    }
+
+    .btn-use-template {
+        background: #6366f1;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: block;
+        text-align: center;
+    }
+
+    .btn-use-template:hover {
+        background: #4f46e5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="templates-container">
+    <div style="margin-bottom: 2rem;">
+        <h1 style="margin: 0 0 0.5rem 0;">📋 Cover Letter Templates</h1>
+        <p style="color: #6b7280; margin: 0;">
+            Choose a template and customize it for your application
+        </p>
+    </div>
+
+    <div class="templates-grid">
+        {% for template_name, template in templates.items() %}
+        <div class="template-card">
+            <div class="template-icon">
+                {% if template_name == 'professional' %}📄
+                {% elif template_name == 'enthusiastic' %}🌟
+                {% elif template_name == 'conservative' %}🎩
+                {% elif template_name == 'career_change' %}🔄
+                {% else %}📝{% endif %}
+            </div>
+
+            <h3 class="template-name">{{ template.name }}</h3>
+            <p class="template-description">{{ template.description }}</p>
+
+            <div class="template-preview">
+                {{ template.content[:200] }}...
+            </div>
+
+            <a href="{{ url_for('cover_letters.from_template', template_name=template_name) }}"
+                class="btn-use-template">
+                Use This Template
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div
+        style="margin-top: 3rem; text-align: center; background: white; padding: 2rem; border-radius: 12px; border: 2px solid #e5e7eb;">
+        <h3 style="margin: 0 0 1rem 0;">💡 Not sure which template to use?</h3>
+        <p style="color: #6b7280; margin: 0 0 1.5rem 0;">
+            Let AI generate a personalized cover letter for you
+        </p>
+        <a href="{{ url_for('cover_letters.generate') }}" class="btn btn-primary">
+            ✨ Generate with AI Instead
+        </a>
+    </div>
+
+    <div style="margin-top: 2rem; text-align: center;">
+        <a href="{{ url_for('cover_letters.index') }}" style="color: #6b7280; text-decoration: none;">
+            ← Back to Cover Letters
+        </a>
+    </div>
+</div>
+{% endblock %}

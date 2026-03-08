@@ -1,0 +1,405 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    .features-hero {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        color: white;
+        padding: 4rem 2rem;
+        text-align: center;
+        margin-bottom: 3rem;
+        border-radius: 0 0 24px 24px;
+    }
+
+    .features-hero h1 {
+        margin: 0 0 1rem 0;
+        font-size: 3rem;
+        font-weight: 700;
+    }
+
+    .features-hero p {
+        margin: 0;
+        font-size: 1.25rem;
+        opacity: 0.95;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 2rem;
+        max-width: 1200px;
+        margin: -4rem auto 4rem auto;
+        padding: 0 2rem;
+        position: relative;
+        z-index: 10;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 2rem 1.5rem;
+        border-radius: 28px;
+        box-shadow: 0 10px 50px rgba(0, 0, 0, 0.08);
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 180px;
+        border: 1px solid rgba(229, 231, 235, 0.6);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 60px rgba(99, 102, 241, 0.12);
+        border-color: rgba(99, 102, 241, 0.3);
+    }
+
+    .stat-number {
+        font-size: clamp(1.75rem, 3vw, 2.5rem);
+        font-weight: 800;
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.5rem;
+        line-height: 1.2;
+        width: 100%;
+        word-break: break-word;
+    }
+
+    .stat-label {
+        color: #64748b;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        margin: 0;
+        line-height: 1.4;
+    }
+
+
+    .features-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem 4rem 2rem;
+    }
+
+    .category-section {
+        margin-bottom: 4rem;
+    }
+
+    .category-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .category-badge {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .category-title {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 2rem;
+    }
+
+    .feature-card {
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 2rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .feature-card:hover {
+        border-color: #6366f1;
+        box-shadow: 0 12px 30px rgba(99, 102, 241, 0.15);
+        transform: translateY(-4px);
+    }
+
+    .feature-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .feature-name {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin: 0 0 1rem 0;
+    }
+
+    .feature-description {
+        color: #6b7280;
+        line-height: 1.6;
+        margin: 0 0 1.5rem 0;
+    }
+
+    .feature-benefits {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 1.5rem 0;
+    }
+
+    .feature-benefits li {
+        color: #4b5563;
+        font-size: 0.875rem;
+        padding: 0.5rem 0;
+        padding-left: 1.5rem;
+        position: relative;
+    }
+
+    .feature-benefits li:before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: #10b981;
+        font-weight: 700;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.375rem 0.875rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-active {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-beta {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-coming-soon {
+        background: #e0e7ff;
+        color: #3730a3;
+    }
+
+    .cta-section {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        color: white;
+        padding: 4rem 2rem;
+        text-align: center;
+        border-radius: 24px;
+        margin: 4rem auto;
+        max-width: 1200px;
+    }
+
+    .cta-section h2 {
+        margin: 0 0 1rem 0;
+        font-size: 2.5rem;
+        font-weight: 700;
+    }
+
+    .cta-section p {
+        margin: 0 0 2rem 0;
+        font-size: 1.25rem;
+        opacity: 0.95;
+    }
+
+    .cta-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-large {
+        padding: 1rem 2.5rem;
+        font-size: 1.125rem;
+        font-weight: 600;
+        border-radius: 12px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-white {
+        background: white;
+        color: #6366f1;
+    }
+
+    .btn-white:hover {
+        background: #f9fafb;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-outline-white {
+        background: transparent;
+        color: white;
+        border: 2px solid white;
+    }
+
+    .btn-outline-white:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+        .features-hero h1 {
+            font-size: 2rem;
+        }
+
+        .features-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stat-card {
+            transform: translateY(-30px);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="features-hero">
+    <h1>🚀 Powerful Features</h1>
+    <p>Everything you need to land your dream job, powered by AI and automation</p>
+</div>
+
+<!-- Stats Section -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-number">{{ stats.total_features }}</div>
+        <p class="stat-label">Total Features</p>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ stats.ai_powered }}</div>
+        <p class="stat-label">AI-Powered Tools</p>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ stats.integrations }}</div>
+        <p class="stat-label">Platform Integrations</p>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ stats.time_saved }}</div>
+        <p class="stat-label">Saved Per Week</p>
+    </div>
+
+</div>
+
+<!-- Features Container -->
+<div class="features-container">
+
+    <!-- Core Features -->
+    <div class="category-section">
+        <div class="category-header">
+            <span class="category-badge">Core</span>
+            <h2 class="category-title">Core Features</h2>
+        </div>
+        <div class="features-grid">
+            {% for feature in features.core %}
+            <div class="feature-card">
+                <span class="feature-icon">{{ feature.icon }}</span>
+                <h3 class="feature-name">{{ feature.name }}</h3>
+                <p class="feature-description">{{ feature.description }}</p>
+                <ul class="feature-benefits">
+                    {% for benefit in feature.benefits %}
+                    <li>{{ benefit }}</li>
+                    {% endfor %}
+                </ul>
+                <span class="status-badge status-{{ feature.status }}">{{ feature.status }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Quick Wins Features -->
+    <div class="category-section">
+        <div class="category-header">
+            <span class="category-badge" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">Quick
+                Wins</span>
+            <h2 class="category-title">Quick Wins Features</h2>
+        </div>
+        <div class="features-grid">
+            {% for feature in features.quick_wins %}
+            <div class="feature-card">
+                <span class="feature-icon">{{ feature.icon }}</span>
+                <h3 class="feature-name">{{ feature.name }}</h3>
+                <p class="feature-description">{{ feature.description }}</p>
+                <ul class="feature-benefits">
+                    {% for benefit in feature.benefits %}
+                    <li>{{ benefit }}</li>
+                    {% endfor %}
+                </ul>
+                <span class="status-badge status-{{ feature.status }}">{{ feature.status }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Advanced Features -->
+    <div class="category-section">
+        <div class="category-header">
+            <span class="category-badge"
+                style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">Advanced</span>
+            <h2 class="category-title">Advanced Features</h2>
+        </div>
+        <div class="features-grid">
+            {% for feature in features.advanced %}
+            <div class="feature-card">
+                <span class="feature-icon">{{ feature.icon }}</span>
+                <h3 class="feature-name">{{ feature.name }}</h3>
+                <p class="feature-description">{{ feature.description }}</p>
+                <ul class="feature-benefits">
+                    {% for benefit in feature.benefits %}
+                    <li>{{ benefit }}</li>
+                    {% endfor %}
+                </ul>
+                <span class="status-badge status-{{ feature.status }}">{{ feature.status }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+
+<!-- CTA Section -->
+<div class="cta-section">
+    <h2>Ready to Transform Your Job Search?</h2>
+    <p>Join thousands of job seekers who are landing their dream jobs with CareerJet</p>
+    <div class="cta-buttons">
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('dashboard.index') }}" class="btn-large btn-white">
+            Go to Dashboard →
+        </a>
+        {% else %}
+        <a href="{{ url_for('auth.register') }}" class="btn-large btn-white">
+            Get Started Free →
+        </a>
+        <a href="{{ url_for('auth.login') }}" class="btn-large btn-outline-white">
+            Sign In
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

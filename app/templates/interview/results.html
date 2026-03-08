@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold mb-3">Interview Session Complete! 🎉</h1>
+        <p class="lead text-muted">Here is how you performed in your mock interview for <strong>{{
+                session_data.job_title }}</strong>.</p>
+
+        <div class="d-flex justify-content-center gap-3 mt-4">
+            <a href="{{ url_for('interview.index') }}" class="btn btn-outline-primary"><i class="fas fa-redo me-2"></i>
+                New Session</a>
+            <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary"><i class="fas fa-home me-2"></i>
+                Dashboard</a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {% for item in session_data.answers %}
+        <div class="col-12">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <h5 class="mb-0 fw-bold">Question {{ loop.index }}</h5>
+                    <span
+                        class="badge {{ 'bg-success' if item.evaluation.score >= 80 else 'bg-warning' if item.evaluation.score >= 50 else 'bg-danger' }}">
+                        Score: {{ item.evaluation.score }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <p class="lead fw-bold mb-3 text-dark">{{ item.question }}</p>
+
+                    <div class="row">
+                        <div class="col-md-6 border-end">
+                            <h6 class="text-muted text-uppercase small fw-bold">Your Answer</h6>
+                            <p class="text-muted fst-italic px-2 py-2 bg-light rounded">{{ item.answer }}</p>
+                        </div>
+                        <div class="col-md-6 ps-md-4">
+                            <h6 class="text-muted text-uppercase small fw-bold">Feedback</h6>
+                            <ul class="list-unstyled">
+                                {% for strength in item.evaluation.strengths %}
+                                <li class="text-success mb-1"><i class="fas fa-check me-2"></i> {{ strength }}</li>
+                                {% endfor %}
+                                {% for weakness in item.evaluation.weaknesses %}
+                                <li class="text-danger mb-1"><i class="fas fa-times me-2"></i> {{ weakness }}</li>
+                                {% endfor %}
+                            </ul>
+                            <div class="alert alert-info mt-3 small">
+                                <strong>Tip:</strong> {{ item.evaluation.improved_answer[:150] }}...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

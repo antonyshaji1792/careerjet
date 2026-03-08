@@ -1,0 +1,753 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    :root {
+        --admin-bg: #f8fafc;
+        --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+        --accent-primary: #6366f1;
+        --accent-success: #10b981;
+        --accent-warning: #f59e0b;
+        --text-main: #1e293b;
+    }
+
+    .admin-body {
+        background: var(--admin-bg);
+        min-height: 100vh;
+    }
+
+    .dash-header {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: 20px;
+        margin-bottom: 2.5rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .dash-header::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 400px;
+        height: 400px;
+        background: rgba(99, 102, 241, 0.1);
+        border-radius: 50%;
+        filter: blur(50px);
+    }
+
+    .stats-layout {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .glass-card {
+        background: white;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .glass-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 25px -5px rgba(0, 0, 0, 0.08);
+    }
+
+    .stat-label {
+        color: #64748b;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--text-main);
+        margin: 0.5rem 0;
+    }
+
+    .stat-trend {
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .trend-up {
+        color: var(--accent-success);
+    }
+
+    .health-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .health-pill {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem;
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #f1f5f9;
+        font-size: 0.875rem;
+    }
+
+    .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+    }
+
+    .status-dot.active {
+        background: var(--accent-success);
+        box-shadow: 0 0 10px var(--accent-success);
+    }
+
+    .main-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+    }
+
+    .data-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .card-head {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #fafafa;
+    }
+
+    .card-title {
+        font-weight: 700;
+        font-size: 1.125rem;
+        color: var(--text-main);
+    }
+
+    .action-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 99px;
+        font-weight: 700;
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .activity-item {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #f8fafc;
+        display: flex;
+        gap: 1rem;
+        transition: background 0.2s;
+    }
+
+    .activity-item:hover {
+        background: #f8fafc;
+    }
+
+    .activity-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .icon-app {
+        background: #e0e7ff;
+        color: #4f46e5;
+    }
+
+    .icon-user {
+        background: #ecfdf5;
+        color: #10b981;
+    }
+
+    .activity-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .activity-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-main);
+    }
+
+    .activity-sub {
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-top: 2px;
+    }
+
+    .activity-time {
+        font-size: 0.7rem;
+        color: #94a3b8;
+    }
+
+    .platform-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px dashed #e2e8f0;
+    }
+
+    /* Table Improvements */
+    .premium-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .premium-table th {
+        text-align: left;
+        padding: 1rem 1.5rem;
+        background: #f8fafc;
+        font-size: 0.75rem;
+        color: #64748b;
+        text-transform: uppercase;
+    }
+
+    .premium-table td {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.875rem;
+    }
+
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #ddd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: white;
+        font-size: 0.75rem;
+    }
+
+    .btn-action {
+        padding: 0.4rem 0.8rem;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        background: white;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-action:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-body">
+    <div class="container" style="padding: 2rem 0;">
+
+        <!-- Premium Header -->
+        <div class="dash-header">
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
+                <div>
+                    <h1 style="margin: 0; font-size: 2.25rem; font-weight: 800; letter-spacing: -0.5px;">Control Center
+                    </h1>
+                    <p style="margin: 0.5rem 0 0 0; opacity: 0.8; font-weight: 500;">System intelligence and global
+                        operations overview.</p>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <a href="{{ url_for('admin.autopilot_monitor') }}" class="btn"
+                        style="background: #10b981; color: white; border-radius: 12px; padding: 0.75rem 1.5rem; font-weight: 700;">
+                        <i class="fas fa-robot"></i> Autopilot Monitor
+                    </a>
+                    <a href="{{ url_for('admin.list_contacts') }}" class="btn"
+                        style="background: #f59e0b; color: white; border-radius: 12px; padding: 0.75rem 1.5rem; font-weight: 700;">
+                        <i class="fas fa-headset"></i> Support Requests
+                    </a>
+                    <a href="{{ url_for('admin.config') }}" class="btn"
+                        style="background: rgba(255,255,255,0.1); color: white; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 0.75rem 1.5rem;">
+                        <i class="fas fa-sliders-h"></i> System Config
+                    </a>
+                    <a href="{{ url_for('admin.logs') }}" class="btn"
+                        style="background: white; color: #1e293b; border-radius: 12px; padding: 0.75rem 1.5rem; font-weight: 700;">
+                        <i class="fas fa-terminal"></i> Runtime Logs
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Health Metrics -->
+        <div class="health-grid">
+            <div class="health-pill">
+                <div class="status-dot active"></div>
+                <div>
+                    <div style="color: #64748b; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;">
+                        Database</div>
+                    <div style="font-weight: 600;">{{ health.database }}</div>
+                </div>
+            </div>
+            <div class="health-pill">
+                <div class="status-dot active"></div>
+                <div>
+                    <div style="color: #64748b; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;">Worker
+                        Cluster</div>
+                    <div style="font-weight: 600;">{{ health.background_workers }}</div>
+                </div>
+            </div>
+            <div class="health-pill">
+                <i class="fas fa-history" style="color: var(--accent-primary);"></i>
+                <div>
+                    <div style="color: #64748b; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;">Last
+                        Signal</div>
+                    <div style="font-weight: 600;">{{ health.last_sync }} UTC</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-layout">
+            <div class="glass-card">
+                <div class="stat-label">Total Pipeline</div>
+                <div class="stat-value">{{ stats.total_jobs }}</div>
+                <div class="stat-trend trend-up">
+                    <i class="fas fa-arrow-up"></i> {{ stats.jobs_today }} added today
+                </div>
+            </div>
+            <div class="glass-card">
+                <div class="stat-label">Applications</div>
+                <div class="stat-value">{{ stats.total_applications }}</div>
+                <div class="stat-trend trend-up">
+                    <i class="fas fa-arrow-up"></i> {{ stats.apps_today }} since midnight
+                </div>
+            </div>
+            <div class="glass-card">
+                <div class="stat-label">User Base</div>
+                <div class="stat-value">{{ stats.total_users }}</div>
+                <div class="stat-trend" style="color: #64748b;">
+                    <i class="fas fa-user-check"></i> 100% Verified
+                </div>
+            </div>
+            <div class="glass-card">
+                <div class="stat-label">Automation</div>
+                <div class="stat-value">{{ stats.active_alerts }}</div>
+                <div class="stat-trend" style="color: #6366f1;">
+                    <i class="fas fa-robot"></i> Active Alerts
+                </div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+
+                <!-- Platform Breakdown -->
+                <div class="data-card">
+                    <div class="card-head">
+                        <span class="card-title"><i class="fas fa-chart-pie" style="color: var(--accent-primary);"></i>
+                            Platform Intelligence</span>
+                        <span class="action-badge">Global Sync Active</span>
+                    </div>
+                    <div style="padding: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 3rem;">
+                        <div>
+                            <div class="platform-row">
+                                <span style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <i class="fab fa-linkedin" style="color: #0077b5; font-size: 1.25rem;"></i> LinkedIn
+                                </span>
+                                <span style="font-weight: 700;">{{ stats.linkedin_jobs }} jobs</span>
+                            </div>
+                            <div style="margin-top: 0.5rem; background: #f1f5f9; height: 6px; border-radius: 3px;">
+                                <div
+                                    style="background: #0077b5; width: {{ (stats.linkedin_jobs / (stats.total_jobs or 1) * 100)|round }}%; height: 100%; border-radius: 3px;">
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="platform-row">
+                                <span style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <i class="fas fa-briefcase" style="color: #4a90e2; font-size: 1.1rem;"></i> Naukri
+                                </span>
+                                <span style="font-weight: 700;">{{ stats.naukri_jobs }} jobs</span>
+                            </div>
+                            <div style="margin-top: 0.5rem; background: #f1f5f9; height: 6px; border-radius: 3px;">
+                                <div
+                                    style="background: #4a90e2; width: {{ (stats.naukri_jobs / (stats.total_jobs or 1) * 100)|round }}%; height: 100%; border-radius: 3px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Management Table -->
+                <div class="data-card">
+                    <div class="card-head">
+                        <span class="card-title"><i class="fas fa-users-cog" style="color: var(--accent-primary);"></i>
+                            Identity Management</span>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn-action" onclick="location.reload()"><i class="fas fa-sync"></i></button>
+                        </div>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="premium-table">
+                            <thead>
+                                <tr>
+                                    <th>Identity</th>
+                                    <th>Access level</th>
+                                    <th>Subscription</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                            <div class="user-avatar"
+                                                style="background: linear-gradient(135deg, #6366f1, #a855f7);">
+                                                {{ user.email[0].upper() }}
+                                            </div>
+                                            <div>
+                                                <div style="font-weight: 700; color: #1e293b;">{{ user.email }}</div>
+                                                <div style="font-size: 0.7rem; color: #94a3b8;">UID: 00{{ user.id }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if user.is_super_admin %}
+                                        <span
+                                            style="background: #fef2f2; color: #dc2626; padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase;">Root
+                                            Access</span>
+                                        {% elif user.is_admin %}
+                                        <span
+                                            style="background: #ecfdf5; color: #10b981; padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase;">Operator</span>
+                                        {% else %}
+                                        <span
+                                            style="background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase;">Member</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if user.subscription %}
+                                        <div style="display: flex; flex-direction: column;">
+                                            <span style="font-weight: 700; color: #1e293b; font-size: 0.8rem;">{{
+                                                user.subscription.plan.name }}</span>
+                                            <span
+                                                style="font-size: 0.65rem; color: {% if user.subscription.status == 'active' %}#10b981{% else %}#ef4444{% endif %}; font-weight: 700; text-transform: uppercase;">
+                                                <i class="fas fa-circle"
+                                                    style="font-size: 0.5rem; margin-right: 2px;"></i> {{
+                                                user.subscription.status }}
+                                            </span>
+                                        </div>
+                                        {% else %}
+                                        <span style="color: #94a3b8; font-size: 0.75rem;">No Subscription</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div style="display: flex; gap: 0.5rem;">
+                                            <button class="btn-action"
+                                                onclick="openBillingModal('{{ user.id }}', '{{ user.email }}', '{{ user.subscription.plan_id if user.subscription else '' }}', '{{ user.subscription.status if user.subscription else 'none' }}', '{{ user.subscription.id if user.subscription else '' }}')"
+                                                title="Manage Billing">
+                                                <i class="fas fa-file-invoice-dollar" style="color: #6366f1;"></i>
+                                                Billing
+                                            </button>
+
+                                            {% if current_user.is_super_admin and user.id != current_user.id %}
+                                            <form action="{{ url_for('admin.toggle_admin', user_id=user.id) }}"
+                                                method="POST" style="margin: 0;">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <button type="submit" class="btn-action">
+                                                    {{ 'Demote' if user.is_admin else 'Grant Admin' }}
+                                                </button>
+                                            </form>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Billing Management Modal -->
+            <div id="billingModal"
+                style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; backdrop-filter: blur(4px);">
+                <div
+                    style="background: white; max-width: 500px; margin: 4rem auto; padding: 2.5rem; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h2 style="font-size: 1.5rem; font-weight: 800; color: #1e293b;">Manage User Billing</h2>
+                        <button onclick="closeBillingModal()"
+                            style="border: none; background: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer;">&times;</button>
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="font-size: 0.75rem; color: #64748b; font-weight: 700; text-transform: uppercase;">
+                            User</div>
+                        <div id="modalUserEmail" style="font-weight: 700; color: #1e293b; font-size: 1.125rem;"></div>
+                    </div>
+
+                    <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 1.5rem 0;">
+
+                    <!-- Change Plan Section -->
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="font-size: 1rem; font-weight: 700; color: #1e293b; margin-bottom: 1rem;">Manual Tier
+                            Adjustment</h3>
+                        <div style="display: flex; gap: 0.75rem;">
+                            <select id="planSelect"
+                                style="flex: 1; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 12px; font-weight: 600;">
+                                <option value="">Select a Plan...</option>
+                                {% for plan in plans %}
+                                <option value="{{ plan.id }}">{{ plan.name }} (${{ "%.2f"|format(plan.price) }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <button onclick="adminChangePlan()"
+                                style="background: #6366f1; color: white; border: none; padding: 0 1.5rem; border-radius: 12px; font-weight: 700; cursor: pointer;">Update</button>
+                        </div>
+                    </div>
+
+                    <!-- Status Management Section -->
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="font-size: 1rem; font-weight: 700; color: #1e293b; margin-bottom: 1rem;">Subscription
+                            Status</h3>
+                        <div style="display: flex; gap: 1rem;" id="statusActionButtons">
+                            <!-- Status buttons populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Credits Section -->
+                    <div>
+                        <h3 style="font-size: 1rem; font-weight: 700; color: #1e293b; margin-bottom: 1rem;">Quick Credit
+                            Sync</h3>
+                        <div style="display: flex; gap: 0.75rem;">
+                            <input type="number" id="creditAmount" placeholder="Amount..."
+                                style="flex: 1; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 12px;">
+                            <button onclick="adminAdjustCredits()"
+                                style="background: #1e293b; color: white; border: none; padding: 0 1.5rem; border-radius: 12px; font-weight: 700; cursor: pointer;">Adjust</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Sidebar Activity -->
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+
+                <!-- Live Signals -->
+                <div class="data-card">
+                    <div class="card-head">
+                        <span class="card-title"><i class="fas fa-satellite-dish"
+                                style="color: #ef4444; animation: pulse 2s infinite;"></i> Live Signals</span>
+                        <div class="status-dot active"></div>
+                    </div>
+                    <div id="liveActivityFeed" style="max-height: 700px; overflow-y: auto;">
+                        <!-- JS populated -->
+                        <div style="text-align: center; padding: 3rem; color: #94a3b8;">
+                            <i class="fas fa-circle-notch fa-spin fa-2x"></i>
+                            <div style="margin-top: 1rem; font-weight: 500;">Establishing uplink...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick System Actions -->
+                <div class="data-card" style="background: #1e293b; color: white; border: none;">
+                    <div class="card-head"
+                        style="background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <span class="card-title" style="color: white;">Maintenance</span>
+                    </div>
+                    <div style="padding: 1.5rem; display: grid; gap: 0.75rem;">
+                        <button class="btn"
+                            style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.1); text-align: left; padding: 0.875rem; border-radius: 10px; font-size: 0.8125rem;">
+                            <i class="fas fa-broom" style="margin-right: 0.75rem; color: var(--accent-warning);"></i>
+                            Clear System Cache
+                        </button>
+                        <button class="btn"
+                            style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.1); text-align: left; padding: 0.875rem; border-radius: 10px; font-size: 0.8125rem;">
+                            <i class="fas fa-sync-alt" style="margin-right: 0.75rem; color: var(--accent-success);"></i>
+                            Force Global Re-Index
+                        </button>
+                        <button class="btn"
+                            style="background: rgba(248, 113, 113, 0.2); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.2); text-align: left; padding: 0.875rem; border-radius: 10px; font-size: 0.8125rem;">
+                            <i class="fas fa-power-off" style="margin-right: 0.75rem;"></i> EMERGENCY_SHUTDOWN
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentTargetUserId = null;
+    let currentSubscriptionId = null;
+
+    function openBillingModal(userId, email, planId, status, subId) {
+        currentTargetUserId = userId;
+        currentSubscriptionId = subId;
+        document.getElementById('modalUserEmail').innerText = email;
+        document.getElementById('planSelect').value = planId;
+
+        const btnContainer = document.getElementById('statusActionButtons');
+        btnContainer.innerHTML = '';
+
+        if (subId) {
+            if (status === 'suspended') {
+                btnContainer.innerHTML = `<button onclick="adminToggleStatus('activate')" style="flex: 1; padding: 0.75rem; border-radius: 12px; border: none; background: #10b981; color: white; font-weight: 700; cursor: pointer;">Activate Subscription</button>`;
+            } else if (status === 'active') {
+                btnContainer.innerHTML = `<button onclick="adminToggleStatus('suspend')" style="flex: 1; padding: 0.75rem; border-radius: 12px; border: none; background: #ef4444; color: white; font-weight: 700; cursor: pointer;">Suspend Subscription</button>`;
+            } else {
+                btnContainer.innerHTML = `<div style="color: #64748b; font-size: 0.875rem;">Status "${status}" cannot be manually toggled via quick actions.</div>`;
+            }
+        } else {
+            btnContainer.innerHTML = `<div style="color: #64748b; font-size: 0.875rem;">Set a plan first to create a subscription.</div>`;
+        }
+
+        document.getElementById('billingModal').style.display = 'block';
+    }
+
+    function closeBillingModal() {
+        document.getElementById('billingModal').style.display = 'none';
+        currentTargetUserId = null;
+        currentSubscriptionId = null;
+    }
+
+    async function adminChangePlan() {
+        const planId = document.getElementById('planSelect').value;
+        if (!planId) return alert('Select a plan');
+
+        const response = await fetch(`/api/admin/billing/users/${currentTargetUserId}/change-plan`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({ plan_id: planId })
+        });
+
+        if (response.ok) {
+            location.reload();
+        } else {
+            const err = await response.json();
+            alert(err.error || 'Failed to change plan');
+        }
+    }
+
+    async function adminToggleStatus(action) {
+        const response = await fetch(`/api/admin/billing/subscriptions/${currentSubscriptionId}/${action}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': "{{ csrf_token() }}"
+            }
+        });
+
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('Action failed');
+        }
+    }
+
+    async function adminAdjustCredits() {
+        const amount = document.getElementById('creditAmount').value;
+        if (!amount) return alert('Enter amount');
+
+        const response = await fetch(`/api/admin/billing/credits/adjust`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({
+                user_id: currentTargetUserId,
+                amount: parseInt(amount),
+                reason: 'Manual Admin override'
+            })
+        });
+
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('Failed to adjust credits');
+        }
+    }
+
+    async function updateActivity() {
+        try {
+            const response = await fetch("{{ url_for('admin.activity_feed') }}");
+            const data = await response.json();
+            const feed = document.getElementById('liveActivityFeed');
+
+            if (data.length === 0) {
+                feed.innerHTML = '<div style="text-align: center; padding: 3rem; color: #94a3b8;">No current signals</div>';
+                return;
+            }
+
+            feed.innerHTML = data.map(item => `
+                <div class="activity-item">
+                    <div class="activity-icon ${item.status === 'Applied' ? 'icon-app' : 'icon-user'}">
+                        <i class="fas ${item.status === 'Applied' ? 'fa-paper-plane' : 'fa-robot'}"></i>
+                    </div>
+                    <div class="activity-content">
+                        <div style="display: flex; justify-content: space-between;">
+                             <div class="activity-title">${item.user.split('@')[0]}</div>
+                             <div class="activity-time">${item.time}</div>
+                        </div>
+                        <div class="activity-sub">${item.job} @ <strong>${item.company}</strong></div>
+                        <div style="margin-top: 5px; display: flex; align-items: center; gap: 5px;">
+                            <div class="status-dot ${item.status === 'Applied' ? 'active' : ''}" style="width: 6px; height: 6px;"></div>
+                            <span style="font-size: 0.65rem; font-weight: 700; color: ${item.status === 'Applied' ? '#10b981' : '#ef4444'};">${item.status.toUpperCase()}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        } catch (e) {
+            console.error('Signal decay:', e);
+        }
+    }
+
+
+    updateActivity();
+    setInterval(updateActivity, 8000);
+</script>
+
+<style>
+    @keyframes pulse {
+        0% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.3;
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
+</style>
+{% endblock %}

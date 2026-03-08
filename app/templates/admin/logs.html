@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    .log-container {
+        background: #1e293b;
+        color: #cbd5e1;
+        padding: 1.5rem;
+        border-radius: 12px;
+        font-family: 'Fira Code', monospace;
+        font-size: 0.875rem;
+        line-height: 1.6;
+        max-height: 70vh;
+        overflow-y: auto;
+        border: 1px solid #334155;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .log-line {
+        margin-bottom: 0.25rem;
+        white-space: pre-wrap;
+    }
+
+    .log-error {
+        color: #f87171;
+    }
+
+    .log-warning {
+        color: #fbbf24;
+    }
+
+    .log-info {
+        color: #38bdf8;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div>
+            <h1 style="margin: 0;">📜 System Logs</h1>
+            <p style="color: #64748b; margin-top: 0.5rem;">Last 500 lines of system activity</p>
+        </div>
+        <div style="display: flex; gap: 1rem;">
+            <button onclick="location.reload()" class="btn btn-outline">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-primary" style="background: #334155;">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="log-container" id="logContainer">
+        {% if log_content %}
+        {% for line in log_content.split('\n') %}
+        <div
+            class="log-line {% if 'ERROR' in line %}log-error{% elif 'WARNING' in line %}log-warning{% elif 'INFO' in line %}log-info{% endif %}">
+            {{ line }}
+        </div>
+        {% endfor %}
+        {% else %}
+        <div style="text-align: center; padding: 2rem; color: #64748b;">
+            No system logs available.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    // Auto-scroll to bottom
+    const container = document.getElementById('logContainer');
+    container.scrollTop = container.scrollHeight;
+</script>
+{% endblock %}

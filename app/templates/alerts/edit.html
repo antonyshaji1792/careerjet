@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+        gap: 1rem;
+    }
+
+    .step {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .step-number {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #e5e7eb;
+        color: #6b7280;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .step.active .step-number {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .step-label {
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+
+    .step.active .step-label {
+        color: #3b82f6;
+        font-weight: 600;
+    }
+
+    .info-box {
+        background: #dbeafe;
+        border-left: 4px solid #3b82f6;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border-radius: 8px;
+    }
+
+    .example-box {
+        background: #f9fafb;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        border: 2px dashed #e5e7eb;
+    }
+
+    .help-text {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-top: 0.5rem;
+        line-height: 1.4;
+    }
+
+    .frequency-options {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .frequency-option {
+        position: relative;
+    }
+
+    .frequency-option input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+    }
+
+    .frequency-option label {
+        display: block;
+        padding: 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .frequency-option input[type="radio"]:checked+label {
+        border-color: #3b82f6;
+        background: #dbeafe;
+        color: #1e40af;
+        font-weight: 600;
+    }
+
+    .frequency-option label:hover {
+        border-color: #3b82f6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper" style="max-width: 700px;">
+    <div class="card">
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <h2 style="margin: 0 0 0.5rem 0;">✏️ Edit Job Alert</h2>
+            <p style="color: #6b7280; margin: 0;">
+                Update your preferences for <strong>{{ alert.name }}</strong>
+            </p>
+        </div>
+
+        <!-- Form -->
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <!-- Alert Name -->
+            <div class="form-group">
+                <label for="name" style="font-weight: 600;">
+                    📝 Alert Name
+                    <span style="color: #dc2626;">*</span>
+                </label>
+                <input type="text" id="name" name="name" class="form-control"
+                    placeholder="e.g., Remote Software Engineer Jobs" value="{{ alert.name }}" required>
+            </div>
+
+            <!-- Keywords -->
+            <div class="form-group">
+                <label for="keywords" style="font-weight: 600;">
+                    🔍 Keywords
+                    <span style="color: #dc2626;">*</span>
+                </label>
+                <input type="text" id="keywords" name="keywords" class="form-control"
+                    placeholder="e.g., software engineer, python, react" value="{{ alert.keywords }}" required>
+            </div>
+
+            <!-- Location -->
+            <div class="form-group">
+                <label for="location" style="font-weight: 600;">
+                    📍 Location
+                </label>
+                <input type="text" id="location" name="location" class="form-control"
+                    placeholder="e.g., Remote, New York, San Francisco" value="{{ alert.location }}">
+            </div>
+
+            <!-- Platforms -->
+            <div class="form-group">
+                <label style="font-weight: 600;">
+                    🌐 Job Platforms
+                </label>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-top: 0.5rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="platforms" value="linkedin" {% if 'linkedin' in
+                            alert.platforms_list %}checked{% endif %}>
+                        <span>LinkedIn</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="platforms" value="indeed" {% if 'indeed' in alert.platforms_list
+                            %}checked{% endif %}>
+                        <span>Indeed</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="platforms" value="glassdoor" {% if 'glassdoor' in
+                            alert.platforms_list %}checked{% endif %}>
+                        <span>Glassdoor</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="platforms" value="naukri" {% if 'naukri' in alert.platforms_list
+                            %}checked{% endif %}>
+                        <span>Naukri</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Frequency -->
+            <div class="form-group">
+                <label style="font-weight: 600;">
+                    ⏰ Notification Frequency
+                    <span style="color: #dc2626;">*</span>
+                </label>
+                <div class="frequency-options">
+                    <div class="frequency-option">
+                        <input type="radio" id="instant" name="frequency" value="instant" {% if
+                            alert.frequency=='instant' %}checked{% endif %} required>
+                        <label for="instant">
+                            <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">⚡</div>
+                            <div style="font-weight: 600;">Instant</div>
+                        </label>
+                    </div>
+                    <div class="frequency-option">
+                        <input type="radio" id="daily" name="frequency" value="daily" {% if alert.frequency=='daily'
+                            %}checked{% endif %}>
+                        <label for="daily">
+                            <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">📅</div>
+                            <div style="font-weight: 600;">Daily</div>
+                        </label>
+                    </div>
+                    <div class="frequency-option">
+                        <input type="radio" id="weekly" name="frequency" value="weekly" {% if alert.frequency=='weekly'
+                            %}checked{% endif %}>
+                        <label for="weekly">
+                            <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">📆</div>
+                            <div style="font-weight: 600;">Weekly</div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Email Enabled -->
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: flex; align-items: start; gap: 0.75rem; cursor: pointer;">
+                    <input type="checkbox" id="email_enabled" name="email_enabled" style="margin-top: 0.25rem;" {% if
+                        alert.email_enabled %}checked{% endif %}>
+                    <span style="font-size: 0.875rem; color: #4b5563; line-height: 1.5;">
+                        <strong>Enable email notifications</strong><br>
+                        <span style="color: #6b7280;">Receive job alerts at your registered email address</span>
+                    </span>
+                </label>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div style="display: flex; gap: 1rem;">
+                <a href="{{ url_for('alerts.index') }}" class="btn btn-secondary"
+                    style="flex: 1; justify-content: center;">
+                    Cancel
+                </a>
+                <button type="submit" class="btn btn-primary" style="flex: 2; justify-content: center;">
+                    💾 Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Form validation and feedback
+    document.querySelector('form').addEventListener('submit', function (e) {
+        const platforms = document.querySelectorAll('input[name="platforms"]:checked');
+
+        if (platforms.length === 0) {
+            e.preventDefault();
+            alert('⚠️ Please select at least one job platform.');
+            return false;
+        }
+
+        // Show loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '⏳ Saving changes...';
+    });
+</script>
+{% endblock %}

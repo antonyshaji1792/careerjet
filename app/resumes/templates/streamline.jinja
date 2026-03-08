@@ -1,0 +1,40 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'Arial', sans-serif; margin: 0; padding: 0; display: flex; min-height: 100vh; }
+        .sidebar { width: 30%; background: #059669; color: white; padding: 40px 20px; }
+        .main { width: 70%; padding: 40px; background: white; }
+        .sidebar h1 { font-size: 22pt; margin-bottom: 5px; }
+        .sidebar-section { margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 15px; }
+        .section-title { font-size: 14pt; font-weight: bold; color: #059669; border-bottom: 2px solid #059669; margin-top: 30px; }
+        .item { margin-bottom: 20px; }
+        .skill { display: inline-block; background: rgba(255,255,255,0.2); padding: 3px 8px; margin: 2px; border-radius: 3px; font-size: 9pt; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h1>{{ header.full_name }}</h1>
+        <p>{{ header.title }}</p>
+        <div class="sidebar-section">
+            <p>{{ header.email }}</p><p>{{ header.phone }}</p><p>{{ header.location }}</p>
+        </div>
+        <div class="sidebar-section">
+            <h3>Skills</h3>
+            {% for s in skills %}<span class="skill">{{ s }}</span>{% endfor %}
+        </div>
+    </div>
+    <div class="main">
+        <div class="section"><h2 class="section-title">Profile</h2><p>{{ summary }}</p></div>
+        <div class="section"><h2 class="section-title">Experience</h2>
+            {% for exp in experience %}<div class="item">
+                <div style="display:flex; justify-content:space-between"><strong>{{ exp.role }}</strong><span>{{ exp.duration }}</span></div>
+                <div style="font-style:italic">{{ exp.company }}</div>
+                <ul>{% for a in exp.achievements %}<li>{{ a }}</li>{% endfor %}</ul>
+            </div>{% endfor %}
+        </div>
+    </div>
+</body>
+</html>

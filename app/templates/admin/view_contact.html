@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="admin-container py-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.list_contacts') }}">All Threads</a></li>
+            <li class="breadcrumb-item active">{{ thread.subject }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 fw-bold mb-0 text-dark">{{ thread.subject }}</h1>
+                <span
+                    class="badge {% if thread.status == 'open' %}bg-danger{% else %}bg-secondary{% endif %} px-3 py-2 rounded-pill">
+                    {{ thread.status | upper }}
+                </span>
+            </div>
+
+            <div class="chat-container mb-4">
+                {% for message in thread.messages %}
+                <div
+                    class="message-wrapper d-flex {% if not message.is_admin %}justify-content-start{% else %}justify-content-end{% endif %} mb-4">
+                    <div class="message-bubble p-3 rounded-4 {% if not message.is_admin %}bg-white border text-dark{% else %}bg-dark text-white{% endif %}"
+                        style="max-width: 80%;">
+                        <div class="small fw-bold mb-1 opacity-75">
+                            {% if message.is_admin %}Admin (You){% else %}{{ thread.display_name }}{% endif %}
+                        </div>
+                        <div class="message-content">
+                            {{ message.content | replace('\n', '<br>') | safe }}
+                        </div>
+                        <div class="text-end small mt-2 opacity-50" style="font-size: 0.7rem;">
+                            {{ message.created_at.strftime('%H:%M - %b %d') }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="reply-card card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <form method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="mb-3">
+                            <label for="content" class="form-label fw-bold">Post Reply</label>
+                            <textarea class="form-control rounded-3" id="content" name="content" rows="4"
+                                placeholder="Type your response to the user..."></textarea>
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-dark rounded-pill px-5 py-2 fw-bold">Send
+                                Response</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-4">User Information</h5>
+                    <div class="mb-3">
+                        <div class="text-muted small text-uppercase fw-bold">Name</div>
+                        <div class="fw-semibold">{{ thread.display_name }}</div>
+                    </div>
+                    {% if thread.user %}
+                    <div class="mb-3">
+                        <div class="text-muted small text-uppercase fw-bold">User Status</div>
+                        <div class="fw-semibold text-primary">Registered Member</div>
+                    </div>
+                    {% else %}
+                    <div class="mb-3">
+                        <div class="text-muted small text-uppercase fw-bold">Email</div>
+                        <div class="fw-semibold text-primary">{{ thread.guest_email }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="data-card bg-light p-4 rounded-4 border">
+                <h6 class="fw-bold mb-3">Admin Rules</h6>
+                <ul class="small text-muted mb-0 ps-3">
+                    <li>Be polite and professional.</li>
+                    <li>Reply within 24 hours.</li>
+                    <li>Do not share sensitive passwords.</li>
+                    <li>Close threads once resolved.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .chat-container {
+        max-height: 600px;
+        overflow-y: auto;
+        padding: 20px;
+        background: #f8fafc;
+        border-radius: 20px;
+    }
+
+    .message-bubble {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('contact.my_requests') }}">My Requests</a></li>
+            <li class="breadcrumb-item active">{{ thread.subject }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 fw-bold mb-0 text-dark">{{ thread.subject }}</h1>
+                {% if thread.status == 'open' %}
+                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">Awaiting Support</span>
+                {% elif thread.status == 'replied' %}
+                <span class="badge bg-success px-3 py-2 rounded-pill">Support Replied</span>
+                {% endif %}
+            </div>
+
+            <div class="chat-container mb-4">
+                {% for message in thread.messages %}
+                <div
+                    class="message-wrapper d-flex {% if message.is_admin %}justify-content-start{% else %}justify-content-end{% endif %} mb-4">
+                    <div class="message-bubble p-3 rounded-4 {% if message.is_admin %}bg-white border text-dark{% else %}bg-primary text-white{% endif %}"
+                        style="max-width: 80%;">
+                        <div class="small fw-bold mb-1 opacity-75">
+                            {% if message.is_admin %}CareerJet Support{% else %}You{% endif %}
+                        </div>
+                        <div class="message-content">
+                            {{ message.content | replace('\n', '<br>') | safe }}
+                        </div>
+                        <div class="text-end small mt-2 opacity-50" style="font-size: 0.7rem;">
+                            {{ message.created_at.strftime('%H:%M - %b %d') }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="reply-card card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <form method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="mb-3">
+                            <label for="content" class="form-label fw-bold">Your Reply</label>
+                            <textarea class="form-control rounded-3" id="content" name="content" rows="4"
+                                placeholder="Type your message here..."></textarea>
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 fw-bold">Send
+                                Reply</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-4">Request Details</h5>
+                    <div class="mb-3">
+                        <div class="text-muted small text-uppercase fw-bold">Ticket ID</div>
+                        <div class="fw-semibold">#CJ-{{ "%05d"|format(thread.id) }}</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="text-muted small text-uppercase fw-bold">Created On</div>
+                        <div class="fw-semibold">{{ thread.created_at.strftime('%B %d, %Y') }}</div>
+                    </div>
+                    <div class="mb-0">
+                        <div class="text-muted small text-uppercase fw-bold">Status</div>
+                        <div class="fw-semibold">{{ thread.status | title }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .chat-container {
+        max-height: 600px;
+        overflow-y: auto;
+        padding-right: 10px;
+    }
+
+    .message-bubble {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+    }
+
+    .bg-primary {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+    }
+</style>
+{% endblock %}

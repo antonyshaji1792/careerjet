@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="pricing-container" style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
+    <!-- Header -->
+    <div class="pricing-header" style="text-align: center; margin-bottom: 5rem; animation: fadeInDown 0.8s ease-out;">
+        <h1
+            style="font-size: 3.5rem; font-weight: 800; background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1rem;">
+            Choose Your Career Accelerator
+        </h1>
+        <p style="font-size: 1.25rem; color: #64748b; max-width: 700px; margin: 0 auto; line-height: 1.6;">
+            Every plan includes our core intelligence engine. Scale your job search with high-impact AI credits.
+        </p>
+    </div>
+
+    <!-- Credit Explainer (The "Fairness" Section) -->
+    <div class="credit-explainer" style="
+        background: rgba(248, 250, 252, 0.8);
+        border: 1px solid #e2e8f0;
+        border-radius: 24px;
+        padding: 2.5rem;
+        margin-bottom: 5rem;
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 3rem;
+        align-items: center;
+    ">
+        <div>
+            <h2 style="font-size: 1.75rem; font-weight: 800; color: #1e293b; margin-bottom: 1rem;">How Credits Work</h2>
+            <p style="color: #64748b; line-height: 1.6;">
+                We use a transparent credit system instead of complex "tokens". You only consume what you use, and Pro
+                plans include <strong>Rollover Protection</strong>.
+            </p>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+            <div class="usage-item"
+                style="background: white; padding: 1.5rem; border-radius: 16px; border: 1px solid #f1f5f9; text-align: center;">
+                <div style="font-size: 1.5rem; font-weight: 800; color: #6366f1; margin-bottom: 0.5rem;">10 <i
+                        class="fas fa-coins" style="font-size: 1rem;"></i></div>
+                <div style="font-size: 0.85rem; font-weight: 600; color: #475569;">Full Resume Generation</div>
+            </div>
+            <div class="usage-item"
+                style="background: white; padding: 1.5rem; border-radius: 16px; border: 1px solid #f1f5f9; text-align: center;">
+                <div style="font-size: 1.5rem; font-weight: 800; color: #8b5cf6; margin-bottom: 0.5rem;">5 <i
+                        class="fas fa-coins" style="font-size: 1rem;"></i></div>
+                <div style="font-size: 0.85rem; font-weight: 600; color: #475569;">Job Optimization</div>
+            </div>
+            <div class="usage-item"
+                style="background: white; padding: 1.5rem; border-radius: 16px; border: 1px solid #f1f5f9; text-align: center;">
+                <div style="font-size: 1.5rem; font-weight: 800; color: #ec4899; margin-bottom: 0.5rem;">2 <i
+                        class="fas fa-coins" style="font-size: 1rem;"></i></div>
+                <div style="font-size: 0.85rem; font-weight: 600; color: #475569;">AI Coach Chat</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pricing Grid -->
+    <div class="pricing-grid">
+        {% for plan in plans %}
+        {% set is_current = user_subscription and user_subscription.plan_id == plan.id %}
+        {% set is_pro = plan.slug == 'pro-monthly' %}
+        {% set is_enterprise = plan.slug == 'enterprise-monthly' %}
+
+        <div class="pricing-card {% if is_pro %}is-pro{% endif %}">
+            {% if is_pro %}
+            <div class="recommended-badge">
+                RECOMMENDED
+            </div>
+            {% endif %}
+
+            <div style="margin-bottom: 2.5rem;">
+                <h3 style="font-size: 1.75rem; font-weight: 800; color: #1e293b; margin-bottom: 0.5rem;">{{ plan.name }}
+                </h3>
+                <div style="display: flex; align-items: baseline; gap: 0.25rem; margin-bottom: 1.5rem;">
+                    <span style="font-size: 3.5rem; font-weight: 800; color: #1e293b;">${{
+                        "%.0f"|format(plan.price|default(0))
+                        }}</span>
+                    <span style="font-size: 1.125rem; color: #64748b; font-weight: 600;">/{{
+                        plan.interval|default('month') }}</span>
+                </div>
+
+
+                <div class="credit-badge">
+                    <div class="credit-icon">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 1rem; font-weight: 800; color: #1e293b;">{{ plan.credits_per_interval }}
+                            Credits</div>
+                        <div style="font-size: 0.75rem; color: #64748b; font-weight: 600;">Monthly Allocation</div>
+                    </div>
+                </div>
+            </div>
+
+            <ul class="feature-list">
+                {% if plan.features %}
+                {% for feature in plan.features %}
+                <li>
+                    <i class="fas fa-check-circle"></i>
+                    {{ feature }}
+                </li>
+                {% endfor %}
+                {% endif %}
+            </ul>
+
+            {% if is_current %}
+            <button disabled class="btn-current">
+                Current Active Plan
+            </button>
+            <div style="text-align: center; margin-top: 1rem;">
+                <a href="{{ url_for('subscription.topup') }}"
+                    style="font-size: 0.85rem; color: #6366f1; font-weight: 700; text-decoration: none;">
+                    <i class="fas fa-plus-circle"></i> Need more credits?
+                </a>
+            </div>
+            {% else %}
+            <form action="{{ url_for('subscription.subscribe', plan_id=plan.id) }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <button type="submit" class="btn-subscribe {% if is_pro %}is-pro{% endif %}"
+                    onmouseover="this.style.transform='translateY(-2px)'"
+                    onmouseout="this.style.transform='translateY(0)'">
+                    {% if user_subscription %}
+                    {% if (plan.price|default(0)) > (user_subscription.plan.price|default(0)) %}
+                    Elevate My Career
+                    {% else %}
+                    Switch Plan
+                    {% endif %}
+
+                    {% else %}
+                    Start Accelerating
+                    {% endif %}
+                </button>
+            </form>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- FAQ/Footer -->
+    <div style="text-align: center; margin-top: 6rem; border-top: 1px solid #e2e8f0; padding-top: 4rem;">
+        <h4 style="font-size: 1.25rem; font-weight: 800; color: #1e293b; margin-bottom: 1rem;">Unused Credit Protection
+        </h4>
+        <p style="color: #64748b; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+            Pro and Enterprise plans feature <strong>Full Credit Rollover</strong>. Any credits you don't use this month
+            stay in your wallet for as long as you remain a subscriber.
+        </p>
+    </div>
+</div>
+
+<style>
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .pricing-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2.5rem;
+        align-items: flex-start;
+    }
+
+    .pricing-card {
+        background: white;
+        border-radius: 32px;
+        padding: 3.5rem 2.5rem;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+    .pricing-card.is-pro {
+        border: 2px solid #6366f1;
+        box-shadow: 0 25px 50px -12px rgba(99, 102, 241, 0.15);
+        transform: scale(1.03);
+        z-index: 10;
+    }
+
+    .pricing-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .pricing-card.is-pro:hover {
+        transform: translateY(-5px) scale(1.04);
+    }
+
+    .recommended-badge {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #6366f1;
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 99px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+    }
+
+    .credit-badge {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 1rem;
+        border: 1px dashed #cbd5e1;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .credit-icon {
+        width: 40px;
+        height: 40px;
+        background: white;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6366f1;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .feature-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 3rem 0;
+        flex-grow: 1;
+    }
+
+    .feature-list li {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        color: #475569;
+        font-weight: 500;
+    }
+
+    .feature-list i {
+        color: #10b981;
+        font-size: 1.125rem;
+    }
+
+    .btn-current {
+        width: 100%;
+        padding: 1.25rem;
+        background: #f1f5f9;
+        color: #94a3b8;
+        border: none;
+        border-radius: 16px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: default;
+    }
+
+    .btn-subscribe {
+        width: 100%;
+        padding: 1.25rem;
+        border: none;
+        border-radius: 16px;
+        font-weight: 700;
+        font-size: 1.125rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: #1e293b;
+        color: white;
+    }
+
+    .btn-subscribe.is-pro {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+    }
+</style>
+{% endblock %}

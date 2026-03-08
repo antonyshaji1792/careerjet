@@ -1,0 +1,36 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'Helvetica', sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0.5in; }
+        .header { border-bottom: 2px solid #3f3f46; padding-bottom: 20px; margin-bottom: 30px; text-align: center; }
+        .header h1 { font-size: 28pt; margin: 0; color: #111; text-transform: uppercase; }
+        .header .title { font-size: 14pt; color: #3f3f46; font-weight: bold; }
+        .section-title { font-size: 12pt; font-weight: 800; color: #3f3f46; text-transform: uppercase; margin-top: 25px; border-bottom: 1px solid #eee; }
+        .item { margin-bottom: 15px; }
+        .item-header { display: flex; justify-content: space-between; font-weight: bold; }
+        .skills { display: flex; flex-wrap: wrap; gap: 8px; }
+        .skill { background: #f0f0f0; padding: 4px 10px; border-radius: 4px; font-size: 9pt; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ header.full_name }}</h1>
+        <div class="title">{{ header.title }}</div>
+        <div>{{ header.email }} | {{ header.phone }} | {{ header.location }}</div>
+    </div>
+    <div class="section"><h2 class="section-title">Summary</h2><p>{{ summary }}</p></div>
+    <div class="section"><h2 class="section-title">Experience</h2>
+        {% for exp in experience %}<div class="item">
+            <div class="item-header"><span>{{ exp.role }}</span><span>{{ exp.duration }}</span></div>
+            <div style="color: #3f3f46;">{{ exp.company }}</div>
+            <ul>{% for a in exp.achievements %}<li>{{ a }}</li>{% endfor %}</ul>
+        </div>{% endfor %}
+    </div>
+    <div class="section"><h2 class="section-title">Skills</h2><div class="skills">
+        {% for s in skills %}<span class="skill">{{ s }}</span>{% endfor %}
+    </div></div>
+</body>
+</html>

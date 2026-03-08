@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="header" style="text-align: center; margin-bottom: 4rem;">
+    <h1>Select the Perfect Plan</h1>
+    <p style="color: var(--gray);">Scale your job search with powerful AI automation.</p>
+</div>
+
+<div class="stats-grid" style="grid-template-columns: repeat(2, 1fr); max-width: 900px; margin: 0 auto;">
+    <!-- Free Plan -->
+    <div class="card" style="text-align: center; border: 2px solid #e2e8f0;">
+        <h3 style="color: var(--gray);">Basic</h3>
+        <div style="font-size: 3rem; font-weight: 800; margin: 1.5rem 0;">$0<span
+                style="font-size: 1rem; color: var(--gray);">/mo</span></div>
+        <ul style="list-style: none; padding: 0; margin-bottom: 2rem; text-align: left; display: inline-block;">
+            <li style="margin-bottom: 0.75rem;"><i class="fas fa-check" style="color: var(--secondary);"></i> Job
+                Discovery</li>
+            <li style="margin-bottom: 0.75rem;"><i class="fas fa-check" style="color: var(--secondary);"></i> Smart
+                Matching</li>
+            <li style="margin-bottom: 0.75rem;"><i class="fas fa-times" style="color: var(--danger);"></i> Auto-Apply
+            </li>
+            <li style="margin-bottom: 0.75rem;"><i class="fas fa-times" style="color: var(--danger);"></i> Priority
+                Support</li>
+        </ul>
+        {% if not current_user.is_authenticated or not subscription or subscription.plan_id == 'free' %}
+        <button class="btn btn-outline" style="width: 100%;" disabled>Current Plan</button>
+        {% else %}
+        <a href="{{ url_for('subscription.index') }}" class="btn btn-outline" style="width: 100%;">Downgrade</a>
+        {% endif %}
+    </div>
+
+    <!-- Pro Plan -->
+    <div class="card" style="text-align: center; border: 2px solid var(--primary); position: relative;">
+        <span
+            style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 0.25rem 1rem; border-radius: 99px; font-size: 0.75rem; font-weight: 700;">MOST
+            POPULAR</span>
+        <h3 style="color: var(--primary);">Pro Co-Pilot</h3>
+        <div style="font-size: 3rem; font-weight: 800; margin: 1.5rem 0;">$29<span
+                style="font-size: 1rem; color: var(--gray);">/mo</span></div>
+        <ul style="list-style: none; padding: 0; margin-bottom: 2rem; text-align: left; display: inline-block;">
+            <li style="margin-bottom: 0.75rem;"><i class="fas fa-check" style="color: var(--secondary);"></i> Everything
+                in Basic</li>
+            <li style="margin-bottom: 0.75rem;"><i class="fas fa-check" style="color: var(--secondary);"></i>
+                <strong>Unlimited Auto-Apply</strong>
+            </li>
+            <li style="margin-bottom: 0.75rem;"><i class="fas fa-check" style="color: var(--secondary);"></i> Resume
+                Customization</li>
+            <li style="margin-bottom: 0.75rem;"><i class="fas fa-check" style="color: var(--secondary);"></i> Schedule
+                Applications</li>
+        </ul>
+        {% if not current_user.is_authenticated %}
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary" style="width: 100%;">Join to Upgrade</a>
+        {% elif subscription and subscription.plan_id == 'pro' %}
+        <button class="btn btn-primary" style="width: 100%;" disabled>Current Active Plan</button>
+        {% else %}
+        <button class="btn btn-primary" style="width: 100%;">Upgrade to Pro</button>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

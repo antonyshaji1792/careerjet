@@ -1,0 +1,415 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="admin-container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div>
+            <h1 style="margin: 0;">🛠️ System Configuration</h1>
+            <p style="color: #64748b; margin-top: 0.5rem;">Manage global API keys and AI engine settings.</p>
+        </div>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline" style="border-radius: 12px;">
+            <i class="fas fa-users-cog"></i> User Management
+        </a>
+    </div>
+
+    <form method="POST" action="{{ url_for('admin.config') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="config-grid">
+            <div class="card">
+                <div style="border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                    <h2 style="margin: 0; font-size: 1.25rem; display: flex; align-items: center; gap: 0.75rem;">
+                        <i class="fas fa-brain" style="color: #6366f1;"></i> Primary AI Settings
+                    </h2>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 2rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #334155;">
+                        Active AI Engine
+                    </label>
+                    <select name="PRIMARY_LLM_PROVIDER" class="form-control"
+                        style="border-radius: 10px; cursor: pointer;">
+                        <option value="openai" {% if configs.PRIMARY_LLM_PROVIDER=='openai' %}selected{% endif %}>OpenAI
+                            (Default)</option>
+                        <option value="anthropic" {% if configs.PRIMARY_LLM_PROVIDER=='anthropic' %}selected{% endif %}>
+                            Anthropic (Claude)</option>
+                        <option value="gemini" {% if configs.PRIMARY_LLM_PROVIDER=='gemini' %}selected{% endif %}>Google
+                            Gemini</option>
+                        <option value="ollama" {% if configs.PRIMARY_LLM_PROVIDER=='ollama' %}selected{% endif %}>Ollama
+                            (Local Inference)</option>
+                    </select>
+                    <small style="color: #94a3b8;">Choose which LLM provider will power the system's core
+                        automation.</small>
+                </div>
+
+                <div style="border-top: 1px solid #f1f5f9; padding-top: 2rem; margin-top: 1rem;">
+                    <h3 style="font-size: 1rem; margin-bottom: 1.5rem; color: #475569;">Cloud Provider Activation</h3>
+
+                    <!-- OpenAI Section -->
+                    <div class="provider-section">
+                        <div class="provider-header">
+                            <label class="provider-label"><i class="fab fa-openai"></i> OpenAI (GPT-4o)</label>
+                            <div class="toggle-container">
+                                <span
+                                    class="status-indicator {{ 'status-active' if configs.OPENAI_IS_ACTIVE else 'status-off' }}">
+                                    {{ 'Active' if configs.OPENAI_IS_ACTIVE else 'Off' }}
+                                </span>
+                                <label class="switch">
+                                    <input type="checkbox" name="OPENAI_IS_ACTIVE" {% if configs.OPENAI_IS_ACTIVE
+                                        %}checked{% endif %}>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <input type="password" name="OPENAI_API_KEY" class="form-control"
+                            value="{{ configs.OPENAI_API_KEY }}" placeholder="sk-..." style="border-radius: 10px;">
+                    </div>
+
+                    <!-- Anthropic Section -->
+                    <div class="provider-section">
+                        <div class="provider-header">
+                            <label class="provider-label"><i class="fas fa-feather-alt"></i> Anthropic (Claude)</label>
+                            <div class="toggle-container">
+                                <span
+                                    class="status-indicator {{ 'status-active' if configs.ANTHROPIC_IS_ACTIVE else 'status-off' }}">
+                                    {{ 'Active' if configs.ANTHROPIC_IS_ACTIVE else 'Off' }}
+                                </span>
+                                <label class="switch">
+                                    <input type="checkbox" name="ANTHROPIC_IS_ACTIVE" {% if configs.ANTHROPIC_IS_ACTIVE
+                                        %}checked{% endif %}>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <input type="password" name="ANTHROPIC_API_KEY" class="form-control"
+                            value="{{ configs.ANTHROPIC_API_KEY }}" placeholder="sk-ant-..."
+                            style="border-radius: 10px;">
+                    </div>
+
+                    <!-- Gemini Section -->
+                    <div class="provider-section">
+                        <div class="provider-header">
+                            <label class="provider-label"><i class="fas fa-star"></i> Google Gemini</label>
+                            <div class="toggle-container">
+                                <span
+                                    class="status-indicator {{ 'status-active' if configs.GEMINI_IS_ACTIVE else 'status-off' }}">
+                                    {{ 'Active' if configs.GEMINI_IS_ACTIVE else 'Off' }}
+                                </span>
+                                <label class="switch">
+                                    <input type="checkbox" name="GEMINI_IS_ACTIVE" {% if configs.GEMINI_IS_ACTIVE
+                                        %}checked{% endif %}>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <input type="password" name="GOOGLE_GEMINI_KEY" class="form-control"
+                            value="{{ configs.GOOGLE_GEMINI_KEY }}" placeholder="AIza..." style="border-radius: 10px;">
+                    </div>
+                </div>
+
+                <div style="border-top: 1px solid #f1f5f9; padding-top: 2rem; margin-top: 1rem;">
+                    <div class="provider-header">
+                        <h3 style="font-size: 1rem; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                            <img src="https://ollama.com/public/ollama.png" width="20" height="20"
+                                style="border-radius: 4px;"> Ollama (Local)
+                        </h3>
+                        <div class="toggle-container">
+                            <span
+                                class="status-indicator {{ 'status-active' if configs.OLLAMA_IS_ACTIVE else 'status-off' }}">
+                                {{ 'Active' if configs.OLLAMA_IS_ACTIVE else 'Off' }}
+                            </span>
+                            <label class="switch">
+                                <input type="checkbox" name="OLLAMA_IS_ACTIVE" {% if configs.OLLAMA_IS_ACTIVE
+                                    %}checked{% endif %}>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #334155;">Ollama
+                            Base URL</label>
+                        <input type="text" name="OLLAMA_BASE_URL" class="form-control"
+                            value="{{ configs.OLLAMA_BASE_URL }}" placeholder="http://localhost:11434"
+                            style="border-radius: 10px;">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #334155;">Ollama
+                            Model Name</label>
+                        <input type="text" name="OLLAMA_MODEL" class="form-control" value="{{ configs.OLLAMA_MODEL }}"
+                            placeholder="llama3" style="border-radius: 10px;">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary"
+                    style="width: 100%; padding: 1rem; border-radius: 12px; font-weight: 700; background: #6366f1; margin-top: 2rem;">
+                    <i class="fas fa-save"></i> Save System Configuration
+                </button>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+                <div class="card" style="background: #f8fafc; align-self: start; margin-bottom: 0;">
+                    <h3 style="margin: 0 0 1rem 0;">💡 Provider Selection</h3>
+                    <p style="font-size: 0.9375rem; color: #475569; line-height: 1.6;">
+                        The <strong>Active AI Engine</strong> determines which LLM is used globally across the platform.
+                    </p>
+                    <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                        <div style="padding: 1rem; background: white; border-radius: 12px; border: 1px solid #e2e8f0;">
+                            <strong style="color: #6366f1; display: block; margin-bottom: 0.25rem;">Cloud
+                                Providers</strong>
+                            <p style="font-size: 0.8125rem; color: #64748b; margin: 0;">Requires internet and API keys.
+                                Highest accuracy.</p>
+                        </div>
+                        <div style="padding: 1rem; background: white; border-radius: 12px; border: 1px solid #e2e8f0;">
+                            <strong style="color: #1a1f2c; display: block; margin-bottom: 0.25rem;">Ollama
+                                (Local)</strong>
+                            <p style="font-size: 0.8125rem; color: #64748b; margin: 0;">Runs on your machine.
+                                Privacy-focused.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="align-self: start;">
+                    <div style="border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                        <h2 style="margin: 0; font-size: 1.25rem; display: flex; align-items: center; gap: 0.75rem;">
+                            <i class="fas fa-envelope-open-text" style="color: #6366f1;"></i> SMTP Settings
+                        </h2>
+                    </div>
+
+                    <p style="color: #64748b; font-size: 0.875rem; margin-bottom: 1.5rem;">Configure email credentials
+                        for job alerts and notifications.</p>
+
+                    <div class="form-group" style="margin-bottom: 1.25rem;">
+                        <label class="provider-label">SMTP Server</label>
+                        <input type="text" name="SMTP_SERVER" class="form-control" value="{{ configs.SMTP_SERVER }}"
+                            placeholder="smtp.gmail.com" style="border-radius: 10px;">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1.25rem;">
+                        <label class="provider-label">SMTP Port</label>
+                        <input type="text" name="SMTP_PORT" class="form-control" value="{{ configs.SMTP_PORT }}"
+                            placeholder="587" style="border-radius: 10px;">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1.25rem;">
+                        <label class="provider-label">SMTP Username (Email)</label>
+                        <input type="text" name="SMTP_USER" class="form-control" value="{{ configs.SMTP_USER }}"
+                            placeholder="user@gmail.com" style="border-radius: 10px;">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1.25rem;">
+                        <label class="provider-label">SMTP Password</label>
+                        <input type="password" name="SMTP_PASSWORD" class="form-control"
+                            value="{{ configs.SMTP_PASSWORD }}" placeholder="********" style="border-radius: 10px;">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1.25rem;">
+                        <label class="provider-label">From Email Address</label>
+                        <input type="text" name="SMTP_FROM_EMAIL" class="form-control"
+                            value="{{ configs.SMTP_FROM_EMAIL }}" placeholder="alerts@yourdomain.com"
+                            style="border-radius: 10px;">
+                    </div>
+
+                    <div class="provider-header" style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
+                        <label class="provider-label">Use TLS Security</label>
+                        <div class="toggle-container">
+                            <label class="switch">
+                                <input type="checkbox" name="SMTP_USE_TLS" {% if configs.SMTP_USE_TLS %}checked{% endif
+                                    %}>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="button" id="testSMTPBtn" class="btn btn-outline"
+                        style="width: 100%; padding: 0.75rem; border-radius: 10px; font-weight: 600;">
+                        <i class="fas fa-paper-plane"></i> Test SMTP Connection
+                    </button>
+                    <div id="smtpStatus"
+                        style="margin-top: 1rem; padding: 0.75rem; border-radius: 8px; display: none; font-size: 0.8125rem;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+    .admin-container {
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    .config-grid {
+        display: grid;
+        grid-template-columns: 1.6fr 1fr;
+        gap: 2rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s;
+    }
+
+    .form-control:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        outline: none;
+    }
+
+    /* Switch styling */
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+    }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #cbd5e1;
+        transition: .3s;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .3s;
+    }
+
+    input:checked+.slider {
+        background-color: #10b981;
+    }
+
+    input:focus+.slider {
+        box-shadow: 0 0 1px #10b981;
+    }
+
+    input:checked+.slider:before {
+        transform: translateX(20px);
+    }
+
+    .slider.round {
+        border-radius: 24px;
+    }
+
+    .slider.round:before {
+        border-radius: 50%;
+    }
+
+    .provider-section {
+        margin-bottom: 2rem;
+        background: #f8fafc;
+        padding: 1.5rem;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .provider-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.25rem;
+    }
+
+    .provider-label {
+        font-weight: 700;
+        color: #1e293b;
+        font-size: 0.9375rem;
+    }
+
+    .toggle-container {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .status-indicator {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 0.25rem 0.625rem;
+        border-radius: 99px;
+    }
+
+    .status-active {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .status-off {
+        background: #f1f5f9;
+        color: #64748b;
+    }
+
+    @media (max-width: 768px) {
+        .config-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script>
+    document.getElementById('testSMTPBtn').addEventListener('click', async function () {
+        const btn = this;
+        const statusDiv = document.getElementById('smtpStatus');
+        const originalContent = btn.innerHTML;
+
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending Test...';
+        btn.disabled = true;
+        statusDiv.style.display = 'none';
+
+        try {
+            const response = await fetch("{{ url_for('admin.test_smtp') }}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const result = await response.json();
+
+            statusDiv.style.display = 'block';
+            statusDiv.innerText = result.message;
+
+            if (result.success) {
+                statusDiv.style.background = '#dcfce7';
+                statusDiv.style.color = '#15803d';
+                statusDiv.style.border = '1px solid #bbf7d0';
+            } else {
+                statusDiv.style.background = '#fee2e2';
+                statusDiv.style.color = '#991b1b';
+                statusDiv.style.border = '1px solid #fecaca';
+            }
+        } catch (e) {
+            statusDiv.style.display = 'block';
+            statusDiv.innerText = 'System Error: ' + e.message;
+            statusDiv.style.background = '#fee2e2';
+            statusDiv.style.color = '#991b1b';
+        } finally {
+            btn.innerHTML = originalContent;
+            btn.disabled = false;
+        }
+    });
+</script>
+{% endblock %}

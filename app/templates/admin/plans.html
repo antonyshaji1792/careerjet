@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="admin-container" style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
+    <div class="header"
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem;">
+        <h1 style="font-size: 2rem; font-weight: 800; color: #1e293b;">Manage Subscription Plans</h1>
+        <button onclick="document.getElementById('plan-modal').style.display='block'" class="btn"
+            style="background: #6366f1; color: white; padding: 0.75rem 1.5rem; border-radius: 12px; border: none; font-weight: 700; cursor: pointer;">
+            <i class="fas fa-plus"></i> Create New Plan
+        </button>
+    </div>
+
+    <div class="plans-grid"
+        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 2rem;">
+        {% for plan in plans %}
+        <div class="plan-card">
+            <div style="position: absolute; top: 1.5rem; right: 1.5rem;">
+                <span class="badge {% if plan.is_active %}badge-active{% else %}badge-inactive{% endif %}">
+                    {{ 'Active' if plan.is_active else 'Inactive' }}
+                </span>
+            </div>
+
+            <h3 style="font-size: 1.25rem; font-weight: 800; color: #1e293b; margin-bottom: 0.5rem;">{{ plan.name }}
+            </h3>
+            <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 1.5rem;">Slug: <code>{{ plan.slug }}</code>
+            </div>
+
+            <div style="font-size: 2rem; font-weight: 800; color: #1e293b; margin-bottom: 1.5rem;">
+                ${{ "%.2f"|format(plan.price) }} <span
+                    style="font-size: 0.875rem; color: #64748b; font-weight: 500;">/{{ plan.interval }}</span>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+                <div style="background: #f8fafc; padding: 0.75rem; border-radius: 12px; flex: 1; text-align: center;">
+                    <div
+                        style="font-size: 0.75rem; color: #64748b; font-weight: 700; text-transform: uppercase; margin-bottom: 0.25rem;">
+                        Credits</div>
+                    <div style="font-weight: 800; color: #6366f1;">{{ plan.credits_per_interval }}</div>
+                </div>
+                <div style="background: #f8fafc; padding: 0.75rem; border-radius: 12px; flex: 1; text-align: center;">
+                    <div
+                        style="font-size: 0.75rem; color: #64748b; font-weight: 700; text-transform: uppercase; margin-bottom: 0.25rem;">
+                        Rollover</div>
+                    <div style="font-weight: 800; color: #10b981;">{{ 'YES' if plan.rollover_allowed else 'NO' }}</div>
+                </div>
+            </div>
+
+            <button type="button" class="btn-edit" data-plan='{{ plan.to_dict()|tojson|safe }}'
+                onclick='editPlan(JSON.parse(this.dataset.plan))'>
+                <i class="fas fa-edit"></i> Edit Details
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Modal (Simple implementation) -->
+    <div id="plan-modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;">
+        <div
+            style="background: white; max-width: 600px; margin: 4rem auto; padding: 3rem; border-radius: 24px; position: relative;">
+            <button onclick="document.getElementById('plan-modal').style.display='none'"
+                style="position: absolute; top: 1.5rem; right: 1.5rem; border: none; background: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            <h2 id="modal-title" style="margin-bottom: 2rem;">Create New Plan</h2>
+
+            <form action="{{ url_for('admin.manage_plans') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <input type="hidden" name="plan_id" id="modal-plan-id">
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 700; margin-bottom: 0.5rem; color: #1e293b;">Plan
+                        Name</label>
+                    <input type="text" name="name" id="modal-name" required
+                        style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 12px;">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 700; margin-bottom: 0.5rem; color: #1e293b;">Slug (e.g.
+                        pro-monthly)</label>
+                    <input type="text" name="slug" id="modal-slug" required
+                        style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 12px;">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="form-group">
+                        <label style="display: block; font-weight: 700; margin-bottom: 0.5rem; color: #1e293b;">Price
+                            ($)</label>
+                        <input type="number" step="0.01" name="price" id="modal-price" required
+                            style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 12px;">
+                    </div>
+                    <div class="form-group">
+                        <label
+                            style="display: block; font-weight: 700; margin-bottom: 0.5rem; color: #1e293b;">Interval</label>
+                        <select name="interval" id="modal-interval"
+                            style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 12px;">
+                            <option value="month">Monthly</option>
+                            <option value="year">Yearly</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="form-group">
+                        <label style="display: block; font-weight: 700; margin-bottom: 0.5rem; color: #1e293b;">Monthly
+                            Credits</label>
+                        <input type="number" name="credits_per_interval" id="modal-credits"
+                            style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 12px;">
+                    </div>
+                    <div class="form-group" style="display: flex; align-items: flex-end; padding-bottom: 0.75rem;">
+                        <label
+                            style="font-weight: 700; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" name="rollover_allowed" id="modal-rollover"> Allow Rollover
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 700; margin-bottom: 0.5rem; color: #1e293b;">Stripe Price
+                        ID</label>
+                    <input type="text" name="stripe_price_id" id="modal-stripe-id"
+                        style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 12px;">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 700; margin-bottom: 0.5rem; color: #1e293b;">Features
+                        (One per line)</label>
+                    <textarea name="features" id="modal-features" rows="5"
+                        style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 12px;"></textarea>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 2rem;">
+                    <label style="font-weight: 700; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="is_active" id="modal-active" checked> Plan is Active
+                    </label>
+                </div>
+
+                <button type="submit"
+                    style="width: 100%; background: #6366f1; color: white; border: none; padding: 1.25rem; border-radius: 16px; font-weight: 700; font-size: 1.125rem; cursor: pointer;">
+                    Save Plan Settings
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function editPlan(plan) {
+        document.getElementById('modal-title').innerText = 'Edit Plan: ' + plan.name;
+        document.getElementById('modal-plan-id').value = plan.id;
+        document.getElementById('modal-name').value = plan.name;
+        document.getElementById('modal-slug').value = plan.slug;
+        document.getElementById('modal-price').value = plan.price;
+        document.getElementById('modal-interval').value = plan.interval;
+        document.getElementById('modal-credits').value = plan.credits_per_interval || 0;
+        document.getElementById('modal-rollover').checked = plan.rollover_allowed || false;
+        document.getElementById('modal-stripe-id').value = plan.stripe_price_id || '';
+        document.getElementById('modal-features').value = (plan.features || []).join('\n');
+        document.getElementById('modal-active').checked = plan.is_active;
+        document.getElementById('plan-modal').style.display = 'block';
+    }
+</script>
+
+<style>
+    .plan-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        border: 1px solid #e2e8f0;
+        position: relative;
+    }
+
+    .badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 99px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .badge-active {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .badge-inactive {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .btn-edit {
+        width: 100%;
+        background: #f1f5f9;
+        color: #475569;
+        border: none;
+        padding: 0.75rem;
+        border-radius: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .btn-edit:hover {
+        background: #e2e8f0;
+    }
+</style>
+{% endblock %}

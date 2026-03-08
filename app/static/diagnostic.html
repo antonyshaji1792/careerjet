@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>JavaScript Diagnostic</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .check {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+
+        .pass {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .fail {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 JavaScript Diagnostic Tool</h1>
+    <p>This will check if your JavaScript files are loading correctly.</p>
+
+    <div id="results"></div>
+
+    <script>
+        const results = document.getElementById('results');
+
+        function addResult(message, status) {
+            const div = document.createElement('div');
+            div.className = `check ${status}`;
+            div.innerHTML = message;
+            results.appendChild(div);
+        }
+
+        // Check 1: Document ready
+        addResult('✅ Document loaded successfully', 'pass');
+
+        // Check 2: Check if modal container can be created
+        try {
+            const container = document.createElement('div');
+            container.id = 'test-modal-container';
+            document.body.appendChild(container);
+            addResult('✅ Can create DOM elements', 'pass');
+            container.remove();
+        } catch (e) {
+            addResult('❌ Cannot create DOM elements: ' + e.message, 'fail');
+        }
+
+        // Wait a bit for scripts to load
+        setTimeout(() => {
+            // Check 3: ModalManager class
+            if (typeof ModalManager !== 'undefined') {
+                addResult('✅ ModalManager class is defined', 'pass');
+            } else {
+                addResult('❌ ModalManager class is NOT defined - profile-editor.js not loaded', 'fail');
+            }
+
+            // Check 4: modalManager instance
+            if (typeof modalManager !== 'undefined' && modalManager !== null) {
+                addResult('✅ modalManager instance exists', 'pass');
+            } else {
+                addResult('❌ modalManager instance is NOT created', 'fail');
+            }
+
+            // Check 5: editHeadline function
+            if (typeof editHeadline === 'function') {
+                addResult('✅ editHeadline function is defined', 'pass');
+            } else {
+                addResult('❌ editHeadline function is NOT defined', 'fail');
+            }
+
+            // Check 6: addSkill function
+            if (typeof addSkill === 'function') {
+                addResult('✅ addSkill function is defined', 'pass');
+            } else {
+                addResult('❌ addSkill function is NOT defined', 'fail');
+            }
+
+            // Check 7: addEmployment function
+            if (typeof addEmployment === 'function') {
+                addResult('✅ addEmployment function is defined', 'pass');
+            } else {
+                addResult('❌ addEmployment function is NOT defined', 'fail');
+            }
+
+            // Check 8: editEmployment function
+            if (typeof editEmployment === 'function') {
+                addResult('✅ editEmployment function is defined', 'pass');
+            } else {
+                addResult('❌ editEmployment function is NOT defined', 'fail');
+            }
+
+            // Check 9: Try to call editHeadline
+            if (typeof editHeadline === 'function') {
+                addResult('📝 <strong>Test:</strong> Click this button to test modal: <button onclick="editHeadline()" style="padding: 10px 20px; background: #6366f1; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">Test Edit Headline</button>', 'info');
+            }
+
+            // Check 10: Console errors
+            addResult('📋 <strong>Next Step:</strong> Open browser console (F12) and check for any red error messages. If you see errors, copy them and share with me.', 'info');
+
+        }, 1000);
+    </script>
+
+    <!-- Load the scripts -->
+    <meta name="csrf-token" content="test-csrf-token">
+    <link rel="stylesheet" href="/static/css/profile-editor.css">
+    <script src="/static/js/profile-editor.js"></script>
+    <script src="/static/js/profile-editor-extended.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,440 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    .naukri-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .naukri-header {
+        background: linear-gradient(135deg, #2D3E50 0%, #4A90E2 100%);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .naukri-header h1 {
+        margin: 0 0 0.5rem 0;
+        font-size: 2.5rem;
+        font-weight: 700;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        border: 2px solid #e5e7eb;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        border-color: #4A90E2;
+    }
+
+    .stat-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #4A90E2;
+        margin: 0;
+    }
+
+    .btn-naukri {
+        background: #4A90E2;
+        color: white;
+        border: none;
+        padding: 0.875rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-naukri:hover {
+        background: #357ABD;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(74, 144, 226, 0.3);
+    }
+
+    .status-connected {
+        background: #d1fae5;
+        color: #065f46;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+
+    .status-disconnected {
+        background: #fee2e2;
+        color: #991b1b;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+
+    .search-section {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr 0.5fr auto;
+        gap: 1.25rem;
+        align-items: flex-end;
+    }
+
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="naukri-container">
+    <div class="naukri-header">
+        <h1>🚀 Naukri.com Automation</h1>
+        <p>Your intelligent companion for the Indian job market</p>
+    </div>
+
+    <!-- Connection Status -->
+    <div style="text-align: center; margin-bottom: 2.5rem;">
+        {% if credentials and credentials.is_active %}
+        <span class="status-connected">✓ Connected: {{ credentials.email }}</span>
+        {% else %}
+        <span class="status-disconnected">✗ Naukri Account Not Connected</span>
+        <div style="margin-top: 1rem;">
+            <a href="{{ url_for('naukri.credentials') }}" class="btn-naukri"
+                style="max-width: 250px; display: inline-block;">Connect Account</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card" onclick="window.location.href='{{ url_for('naukri.jobs') }}'" style="cursor: pointer;">
+            <div class="stat-icon">🔎</div>
+            <h2 class="stat-value">{{ naukri_jobs_count }}</h2>
+            <p style="color: #64748b; margin-top: 0.5rem;">Total Naukri Jobs</p>
+        </div>
+
+        <div class="stat-card" onclick="window.location.href='{{ url_for('alerts.index') }}'" style="cursor: pointer;">
+            <div class="stat-icon">🔔</div>
+            <h2 class="stat-value">{{ alerts_count }}</h2>
+            <p style="color: #64748b; margin-top: 0.5rem;">Naukri Specific Alerts</p>
+        </div>
+    </div>
+
+    <!-- AI Autopilot Section -->
+    {% if credentials and credentials.is_active %}
+    <div class="search-section"
+        style="border: 2px solid #4338ca; background: linear-gradient(to right, #ffffff, #f0f9ff);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+            <div>
+                <h3 style="color: #1e40af; display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                    🤖 Naukri AI Autopilot
+                    {% if schedule and schedule.is_autopilot_enabled %}
+                    <span
+                        style="font-size: 0.75rem; background: #10b981; color: white; padding: 0.25rem 0.75rem; border-radius: 99px; font-weight: 700;">FULLY
+                        AUTOMATED</span>
+                    {% else %}
+                    <span
+                        style="font-size: 0.75rem; background: #dbeafe; color: #1e40af; padding: 0.25rem 0.75rem; border-radius: 99px; font-weight: 700;">ACTIVE</span>
+                    {% endif %}
+                </h3>
+                <p style="margin: 0.5rem 0 0 0; color: #64748b; font-size: 0.9375rem;">
+                    Automatically scrape jobs from your alerts and apply on your behalf using AI to answer questions.
+                </p>
+            </div>
+            <div id="autopilotBadge"
+                style="padding: 0.4rem 0.8rem; border-radius: 99px; background: #f1f5f9; color: #64748b; font-weight: 600; font-size: 0.875rem;">
+                Idle
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+            <div style="padding: 1rem; background: white; border: 1px solid #e2e8f0; border-radius: 12px; text-align: center; cursor: pointer;"
+                onclick="window.location.href='{{ url_for('alerts.index') }}'">
+                <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Alerts
+                </div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: #1e40af;">{{ alerts_count }}</div>
+            </div>
+            <div
+                style="padding: 1rem; background: white; border: 1px solid #e2e8f0; border-radius: 12px; text-align: center;">
+                <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Scraped
+                </div>
+                <div id="autoFoundCount" style="font-size: 1.5rem; font-weight: 700; color: #1e40af;">--</div>
+            </div>
+            <div
+                style="padding: 1rem; background: white; border: 1px solid #e2e8f0; border-radius: 12px; text-align: center;">
+                <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Applied
+                </div>
+                <div id="autoAppliedCount" style="font-size: 1.5rem; font-weight: 700; color: #10b981;">--</div>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem;">
+            <button id="autopilotBtn" class="btn-naukri"
+                style="flex: 2; display: flex; align-items: center; justify-content: center; gap: 0.75rem;">
+                <i class="fas fa-robot"></i> Run AI Autopilot (Filtered)
+            </button>
+            <button id="bulkApplyBtn" class="btn-naukri"
+                style="flex: 1; background: #4338ca; display: flex; align-items: center; justify-content: center; gap: 0.75rem;">
+                <i class="fas fa-rocket"></i> Bulk Apply Top 10
+            </button>
+        </div>
+
+        <div id="autopilotLog"
+            style="margin-top: 1rem; max-height: 150px; overflow-y: auto; font-family: 'Courier New', Courier, monospace; font-size: 0.8125rem; background: #0f172a; color: #38bdf8; padding: 1rem; border-radius: 8px; display: none;">
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Scrape Form -->
+    {% if credentials and credentials.is_active %}
+    <div class="search-section">
+        <h3 style="margin: 0 0 1.5rem 0; display: flex; align-items: center; gap: 0.75rem;">
+            <i class="fas fa-search" style="color: #4A90E2;"></i> Scrape New Jobs
+        </h3>
+        <form method="POST" action="{{ url_for('naukri.scrape_jobs') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-grid">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Role / Skills</label>
+                    <input type="text" name="keywords" class="form-control" placeholder="e.g. Python Developer" required
+                        style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Location</label>
+                    <input type="text" name="location" class="form-control" placeholder="e.g. Bangalore"
+                        style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Limit</label>
+                    <input type="number" name="limit" class="form-control" value="20" min="1" max="50"
+                        style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px;">
+                </div>
+                <button type="submit" class="btn-naukri" style="padding: 0.75rem 2rem;">🚀 Scrape</button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- Action Links -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+        <div class="stat-card" style="text-align: left;">
+            <h3>🔑 Account Settings</h3>
+            <p style="color: #64748b; margin: 1rem 0;">Update your Naukri.com login details or reconnect your account.
+            </p>
+            <a href="{{ url_for('naukri.credentials') }}" class="btn-naukri"
+                style="display: block; text-align: center; text-decoration: none;">Manage Credentials</a>
+        </div>
+
+        <div class="stat-card" style="text-align: left;">
+            <h3>📋 Explore Jobs</h3>
+            <p style="color: #64748b; margin: 1rem 0;">Browse all discovered Naukri jobs and check your AI match scores.
+            </p>
+            <a href="{{ url_for('naukri.jobs') }}" class="btn-naukri"
+                style="display: block; text-align: center; text-decoration: none; background: #2D3E50;">View Naukri
+                Jobs</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    const autopilotBtn = document.getElementById('autopilotBtn');
+    if (autopilotBtn) {
+        autopilotBtn.addEventListener('click', async function () {
+            const btn = this;
+            const badge = document.getElementById('autopilotBadge');
+            const log = document.getElementById('autopilotLog');
+            const originalText = btn.innerHTML;
+
+            // UI Feedback
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Autopilot Running...';
+            btn.disabled = true;
+            btn.style.opacity = '0.7';
+
+            badge.textContent = 'Running';
+            badge.style.background = '#dbeafe';
+            badge.style.color = '#1e40af';
+
+            log.style.display = 'block';
+            log.innerHTML = '<div>> Initializing Naukri autonomous seeker...</div>';
+
+            const addLog = (msg, type = 'info') => {
+                const div = document.createElement('div');
+                div.textContent = `> ${msg}`;
+                div.style.marginBottom = '4px';
+                if (type === 'success') div.style.color = '#34d399';
+                if (type === 'error') div.style.color = '#f87171';
+                log.appendChild(div);
+                log.scrollTop = log.scrollHeight;
+            };
+
+            try {
+                addLog('Authenticating with Naukri engine...');
+
+                const response = await fetch("{{ url_for('naukri.run_autopilot') }}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': "{{ csrf_token() }}",
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status} ${response.statusText}`);
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    addLog('Success: Naukri job cycle completed.', 'success');
+
+                    if (result.data.searches && result.data.searches.length > 0) {
+                        result.data.searches.forEach(search => {
+                            addLog(`Searching for: "${search.keywords}" in "${search.location || 'Anywhere'}"...`);
+                        });
+                    }
+                    document.getElementById('autoFoundCount').textContent = result.data.jobs_scraped;
+                    document.getElementById('autoAppliedCount').textContent = result.data.applications_sent;
+
+                    const scraped = result.data.jobs_scraped || 0;
+                    if (scraped > 0) {
+                        addLog(`Found ${scraped} jobs on Naukri during this cycle.`);
+                    } else {
+                        addLog('Search returned 0 jobs. Try broadening your keywords.', 'error');
+                    }
+
+                    if (result.data.applications_sent > 0) {
+                        addLog(`Applied to ${result.data.applications_sent} new jobs during this session.`, 'success');
+                    } else if (scraped > 0) {
+                        addLog('No new jobs met your match threshold criteria.');
+                    }
+
+                    if (result.data.details && result.data.details.length > 0) {
+                        result.data.details.forEach(detail => {
+                            const status = detail.status === 'success' ? 'Applied' : 'Failed';
+                            addLog(`${status}: ${detail.job} ${detail.company ? '@ ' + detail.company : ''}`, detail.status);
+                        });
+                    } else if (scraped === 0) {
+                        addLog('No new matching jobs to apply for at this moment.');
+                    }
+
+                    badge.textContent = 'Completed';
+                    badge.style.background = '#d1fae5';
+                    badge.style.color = '#065f46';
+                } else {
+                    addLog('Error: ' + result.message, 'error');
+                    badge.textContent = 'Failed';
+                    badge.style.background = '#fee2e2';
+                    badge.style.color = '#991b1b';
+                }
+            } catch (error) {
+                addLog('System Error: ' + error.message, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            }
+        });
+    }
+
+    const bulkApplyBtn = document.getElementById('bulkApplyBtn');
+    if (bulkApplyBtn) {
+        bulkApplyBtn.addEventListener('click', async function () {
+            const btn = this;
+            const badge = document.getElementById('autopilotBadge');
+            const log = document.getElementById('autopilotLog');
+            const originalText = btn.innerHTML;
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Bulk Applying...';
+            btn.disabled = true;
+            btn.style.opacity = '0.7';
+
+            badge.textContent = 'Running';
+            log.style.display = 'block';
+            log.innerHTML = '<div>> Initializing Naukri Bulk Apply...</div>';
+
+            const addLog = (msg, type = 'info') => {
+                const div = document.createElement('div');
+                div.textContent = `> ${msg}`;
+                if (type === 'success') div.style.color = '#34d399';
+                if (type === 'error') div.style.color = '#f87171';
+                log.appendChild(div);
+                log.scrollTop = log.scrollHeight;
+            };
+
+            try {
+                const response = await fetch("{{ url_for('naukri.quick_apply') }}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': "{{ csrf_token() }}",
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status} ${response.statusText}`);
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    addLog(result.message, 'success');
+                    document.getElementById('autoFoundCount').textContent = result.data.jobs_scraped;
+                    document.getElementById('autoAppliedCount').textContent = result.data.applications_sent;
+
+                    if (result.data.details && result.data.details.length > 0) {
+                        result.data.details.forEach(detail => {
+                            const status = detail.status === 'success' ? 'Applied' : 'Failed';
+                            addLog(`${status}: ${detail.job}`, detail.status);
+                        });
+                    }
+                    badge.textContent = 'Completed';
+                } else {
+                    const errorMsg = result.details ? `${result.message}\n${result.details.substring(0, 500)}...` : result.message;
+                    addLog('Error: ' + errorMsg, 'error');
+                    badge.textContent = 'Failed';
+                }
+            } catch (error) {
+                addLog('System Error: ' + error.message, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            }
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="test-token">
+    <title>Quick Modal Test</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            background: #f5f5f5;
+        }
+
+        .test-btn {
+            padding: 15px 30px;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+
+        .test-btn:hover {
+            background: #4f46e5;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .status {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --dark: #1f2937;
+            --gray: #6b7280;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🧪 Quick Modal Test</h1>
+    <p>Click the button below. If a modal opens, JavaScript is working!</p>
+
+    <button class="test-btn" onclick="testModal()">
+        <i class="fas fa-pencil-alt"></i> Test Modal
+    </button>
+
+    <button class="test-btn" onclick="editHeadline()">
+        <i class="fas fa-edit"></i> Edit Headline
+    </button>
+
+    <button class="test-btn" onclick="addSkill()">
+        <i class="fas fa-plus"></i> Add Skill
+    </button>
+
+    <div class="status">
+        <h3>Instructions:</h3>
+        <ol>
+            <li>Click "Test Modal" - A simple modal should appear</li>
+            <li>Click "Edit Headline" - Should open headline edit modal</li>
+            <li>If nothing happens, open browser console (F12) to see errors</li>
+        </ol>
+        <p><strong>Console Status:</strong> <span id="status">Checking...</span></p>
+    </div>
+
+    <script>
+        // Check if scripts loaded
+        document.getElementById('status').textContent = 'Waiting for scripts to load...';
+
+        function testModal() {
+            alert('Button click works! Now checking if modal opens...');
+            if (typeof modalManager === 'undefined') {
+                alert('ERROR: modalManager is not defined. JavaScript file not loaded or has errors.');
+                return;
+            }
+
+            modalManager.show('Test Modal', '<p>If you see this, modals are working!</p>', () => {
+                alert('Save button clicked!');
+                return true;
+            });
+        }
+
+        // Check after page loads
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (typeof editHeadline === 'function') {
+                    document.getElementById('status').innerHTML = '<span style="color: green;">✅ JavaScript loaded successfully!</span>';
+                } else {
+                    document.getElementById('status').innerHTML = '<span style="color: red;">❌ JavaScript functions not found. Check console for errors.</span>';
+                }
+            }, 500);
+        });
+    </script>
+
+    <!-- Load the actual scripts -->
+    <link rel="stylesheet" href="/static/css/profile-editor.css">
+    <script src="/static/js/profile-editor.js"></script>
+    <script src="/static/js/profile-editor-extended.js"></script>
+</body>
+
+</html>

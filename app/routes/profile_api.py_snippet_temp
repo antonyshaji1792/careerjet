@@ -1,0 +1,86 @@
+
+# ============ BASIC INFO (HEADER) ============
+@bp.route('/basic-info', methods=['GET'])
+@login_required
+def get_basic_info():
+    # Fetch all necessary records
+    pd = PersonalDetails.query.filter_by(user_id=current_user.id).first()
+    curr_emp = Employment.query.filter_by(user_id=current_user.id, is_current=True).first()
+    profile = current_user.profile
+    cp = CareerProfile.query.filter_by(user_id=current_user.id).first()
+    
+    data = {
+        'full_name': pd.full_name if pd else current_user.email.split('@')[0],
+        'job_title': curr_emp.job_title if curr_emp else '',
+        'company_name': curr_emp.company_name if curr_emp else '',
+        'city': pd.city if pd else '',
+        'country': pd.country if pd else '',
+        'phone': pd.phone if pd else '',
+        'total_experience': profile.experience if profile else 0,
+        'current_salary': cp.current_salary if cp else '',
+        'notice_period': cp.notice_period_days if cp else (curr_emp.notice_period_days if curr_emp and curr_emp.is_serving_notice else '')
+    }
+    return jsonify({'success': True, 'data': data})
+
+@bp.route('/basic-info', methods=['POST'])
+@login_required
+def save_basic_info():
+    data = request.json
+    
+    # 1. Update Personal Details
+    pd = PersonalDetails.query.filter_by(user_id=current_user.id).first()
+    if not pd:
+        pd = PersonalDetails(user_id=current_user.id)
+        db.session.add(pd)
+    
+    pd.full_name = data.get('full_name')
+    pd.city = data.get('city')
+    pd.country = data.get('country')
+    pd.phone = data.get('phone')
+    pd.updated_at = datetime.utcnow()
+    
+    # 2. Update Current Employment
+    # Logic: If job title/company provided, find current job or create new one.
+    # Note: This is a simplified "Header Edit". Complex logic might involve listing all jobs.
+    # We will assume we are updating the existing current job or creating a generic one if none exists.
+    curr_emp = Employment.query.filter_by(user_id=current_user.id, is_current=True).first()
+    if data.get('job_title') or data.get('company_name'):
+        if not curr_emp:
+            curr_emp = Employment(user_id=current_user.id, is_current=True, start_date=datetime.utcnow())
+            db.session.add(curr_emp)
+        curr_emp.job_title = data.get('job_title')
+        curr_emp.company_name = data.get('company_name')
+        curr_emp.updated_at = datetime.utcnow()
+    
+    # 3. Update User Profile (Experience)
+    profile = current_user.profile
+    if not profile:
+        from app.models import UserProfile
+        profile = UserProfile(user_id=current_user.id)
+        db.session.add(profile)
+    
+    try:
+        profile.experience = int(data.get('total_experience', 0))
+    except (ValueError, TypeError):
+        pass # Ignore invalid int conversion
+        
+    # 4. Update Career Profile (Salary & Notice Period)
+    cp = CareerProfile.query.filter_by(user_id=current_user.id).first()
+    if not cp:
+        cp = CareerProfile(user_id=current_user.id)
+        db.session.add(cp)
+    
+    try:
+        cp.current_salary = int(str(data.get('current_salary', '0')).replace(',', ''))
+    except (ValueError, TypeError):
+        pass
+        
+    try: 
+        cp.notice_period_days = int(data.get('notice_period', 0))
+    except (ValueError, TypeError):
+        pass
+        
+    cp.updated_at = datetime.utcnow()
+    
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Basic info updated successfully'})

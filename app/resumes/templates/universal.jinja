@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Resume</title>
+    <style>
+        /* Base Reset & Fonts */
+        @page {
+            size: A4;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: {{ config.font|default('Helvetica') }}, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: {{ '#f3f4f6' if config.dark else '#1e293b' }};
+            background-color: {{ '#1e293b' if config.dark else '#ffffff' }};
+            width: 210mm;
+            min-height: 297mm;
+        }
+
+        /* --- Utilities --- */
+        .page-container {
+            width: 100%;
+            height: 100%;
+        }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .text-uppercase { text-transform: uppercase; }
+        .fw-bold { font-weight: bold; }
+        .mb-1 { margin-bottom: 5px; }
+        .mb-2 { margin-bottom: 10px; }
+        .mb-3 { margin-bottom: 15px; }
+        .mb-4 { margin-bottom: 20px; }
+        .mb-5 { margin-bottom: 30px; }
+        .p-4 { padding: 30px; }
+        .p-5 { padding: 40px; }
+
+        /* --- Typography --- */
+        h1 { font-size: 24pt; margin: 0 0 5px 0; }
+        h2 { font-size: 16pt; margin: 20px 0 10px 0; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+        h3 { font-size: 12pt; margin: 10px 0 2px 0; font-weight: bold; }
+        .sub-header { font-size: 12pt; margin-bottom: 10px; opacity: 0.8; }
+        .contact-info { font-size: 9pt; color: {{ '#9ca3af' if config.dark else '#6b7280' }}; }
+        p, li { font-size: 10pt; line-height: 1.4; margin: 0 0 5px 0; }
+        ul { padding-left: 15px; margin-top: 5px; }
+
+        /* --- Layout Logic (using Tables for xhtml2pdf Compatibility) --- */
+
+        /* 1. Standard Layout */
+        .layout-standard .header {
+            text-align: center;
+            border-bottom: 2px solid {{ config.accent }};
+            padding: 30px;
+            background: {{ 'linear-gradient(135deg, ' + config.accent + ' 0%, #000 100%)' if config.gradient else 'transparent' }};
+            color: {{ '#fff' if config.gradient else 'inherit' }};
+        }
+        .layout-standard h1 {
+            color: {{ '#ffffff' if config.gradient else config.accent }};
+            text-transform: {{ 'uppercase' if config.caps else 'none' }};
+            letter-spacing: {{ '2px' if config.caps else 'normal' }};
+            border: {{ '4px solid black' if config.border else 'none' }};
+            display: inline-block;
+            padding: {{ '5px 15px' if config.border else '0' }};
+        }
+        .layout-standard h2 {
+            color: {{ config.accent }};
+            border-bottom: 2px solid {{ config.accent }};
+            text-transform: uppercase;
+            font-weight: 800;
+        }
+
+        /* 2. Split Layout (Sidebar) */
+        /* Table with 2 cells: Sidebar (33%) | Main (67%) */
+        .table-split { width: 100%; border-collapse: collapse; }
+        .td-sidebar {
+            width: 32%;
+            vertical-align: top;
+            background-color: #f8fafc;
+            padding: 20px;
+            color: #334155;
+            border-right: 1px solid #e2e8f0;
+        }
+        .td-main {
+            width: 68%;
+            vertical-align: top;
+            padding: 30px;
+        }
+        .side-header { font-size: 11pt; font-weight: bold; color: {{ config.accent }}; margin-top: 20px; border-bottom: 1px solid #cbd5e1; }
+        .sidebar p { font-size: 9pt; }
+
+        /* 3. Bold Layout */
+        .layout-bold .header {
+            background-color: {{ config.accent }};
+            color: white;
+            padding: 40px 30px;
+        }
+        .layout-bold h1 { color: white; }
+        .layout-bold h2 {
+            border-left: 5px solid {{ config.accent }};
+            border-bottom: none;
+            padding-left: 10px;
+            background: #f1f5f9;
+            color: {{ config.accent }};
+            margin-top: 25px;
+        }
+
+        /* 4. Dark Layout */
+        .layout-dark h1 { color: #ffffff; }
+        .layout-dark h2 { color: {{ config.accent }}; border-bottom-color: #475569; }
+        .layout-dark .contact-info { color: #94a3b8; }
+        .layout-dark p, .layout-dark li { color: #e2e8f0; }
+
+        .badge {
+            background: #eee;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 8pt;
+            display: inline-block;
+            margin-right: 4px;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body class="layout-{{ config.type }}">
+
+    {# --- SPLIT LAYOUT RENDERING --- #}
+    {% if config.type == 'split' %}
+    <table class="table-split">
+        <tr>
+            <td class="td-sidebar">
+                <!-- Sidebar Photo Placeholder -->
+                <div style="text-align: center; margin-bottom: 20px;">
+                     <div style="width: 80px; height: 80px; background: #e2e8f0; border-radius: 50%; margin: 0 auto; line-height: 80px; font-size: 10px; color: #94a3b8;">PHOTO</div>
+                </div>
+
+                <div class="side-header">CONTACT</div>
+                <p>{{ header.email }}</p>
+                <p>{{ header.phone }}</p>
+                <p>{{ header.location }}</p>
+
+                <div class="side-header">EDUCATION</div>
+                {% for edu in education %}
+                <div class="mb-2">
+                    <div style="font-weight: bold;">{{ edu.degree }}</div>
+                    <div style="font-size: 8pt; color: #64748b;">{{ edu.institution }}</div>
+                    <div style="font-size: 8pt; color: #64748b;">{{ edu.year }}</div>
+                </div>
+                {% endfor %}
+
+                <div class="side-header">SKILLS</div>
+                {% for skill in skills %}
+                <div style="font-size: 9pt; border-bottom: 1px solid #e2e8f0; padding: 4px 0;">{{ skill }}</div>
+                {% endfor %}
+            </td>
+            <td class="td-main">
+                <h1 style="color: {{ config.accent }}">{{ header.full_name }}</h1>
+                <div class="sub-header" style="color: {{ config.accent }}; font-weight: bold;">{{ header.title }}</div>
+                
+                <h2 style="color: {{ config.accent }}">PROFILE</h2>
+                <p>{{ summary }}</p>
+
+                <h2 style="color: {{ config.accent }}">EXPERIENCE</h2>
+                {% for exp in experience %}
+                <div class="mb-3">
+                    <table width="100%">
+                        <tr>
+                            <td style="font-weight: bold; font-size: 11pt;">{{ exp.role }}</td>
+                            <td class="text-right" style="font-size: 9pt; color: #64748b;">{{ exp.duration }}</td>
+                        </tr>
+                    </table>
+                    <div style="color: {{ config.accent }}; font-weight: bold; margin-bottom: 5px;">{{ exp.company }}</div>
+                    <ul>
+                        {% for ach in exp.achievements %}
+                        <li>{{ ach }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endfor %}
+            </td>
+        </tr>
+    </table>
+
+    {# --- BOLD LAYOUT RENDERING --- #}
+    {% elif config.type == 'bold' %}
+    <div class="header">
+        <h1>{{ header.full_name }}</h1>
+        <div class="sub-header">{{ header.title }}</div>
+        <div style="color: rgba(255,255,255,0.8); font-size: 9pt;">
+            {{ header.email }} | {{ header.phone }} | {{ header.location }}
+        </div>
+    </div>
+    <div class="p-5">
+        <h2>EXECUTIVE SUMMARY</h2>
+        <p style="font-size: 11pt;">{{ summary }}</p>
+
+        <h2>EXPERIENCE</h2>
+        {% for exp in experience %}
+        <div class="mb-4" style="margin-left: 10px; border-left: 2px solid #e2e8f0; padding-left: 15px;">
+            <table width="100%">
+                <tr>
+                    <td style="font-weight: bold; font-size: 12pt;">{{ exp.role }}</td>
+                    <td class="text-right" style="font-weight: bold;">{{ exp.duration }}</td>
+                </tr>
+            </table>
+            <div style="color: {{ config.accent }}; font-weight: bold; margin-bottom: 5px;">{{ exp.company }}</div>
+            <ul>
+                {% for ach in exp.achievements %}
+                <li>{{ ach }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endfor %}
+
+        <!-- Two Column Section for Edu & Skills -->
+        <table width="100%" style="margin-top: 30px;">
+            <tr>
+                <td width="50%" valign="top" style="padding-right: 20px;">
+                    <h2>EDUCATION</h2>
+                    {% for edu in education %}
+                    <div class="mb-2">
+                        <div style="font-weight: bold;">{{ edu.degree }}</div>
+                        <div>{{ edu.institution }}</div>
+                        <div style="color: #64748b;">{{ edu.year }}</div>
+                    </div>
+                    {% endfor %}
+                </td>
+                <td width="50%" valign="top">
+                    <h2>EXPERTISE</h2>
+                    <div>
+                        {% for skill in skills %}
+                        <span class="badge" style="background: #333; color: white;">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    {# --- DARK LAYOUT RENDERING --- #}
+    {% elif config.type == 'dark' %}
+    <div class="p-5">
+        <div style="border-left: 5px solid {{ config.accent }}; padding-left: 20px; margin-bottom: 40px;">
+            <h1>{{ header.full_name }}</h1>
+            <div class="sub-header" style="color: {{ config.accent }}">{{ header.title }}</div>
+        </div>
+
+        <table width="100%">
+            <tr>
+                <td width="65%" valign="top" style="padding-right: 30px;">
+                    <h2>EXPERIENCE</h2>
+                    {% for exp in experience %}
+                    <div class="mb-4">
+                        <h3 style="color: white;">{{ exp.role }}</h3>
+                        <div style="color: {{ config.accent }}">{{ exp.company }} | {{ exp.duration }}</div>
+                        <ul>
+                            {% for ach in exp.achievements %}
+                            <li>{{ ach }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endfor %}
+                </td>
+                <td width="35%" valign="top" style="border-left: 1px solid #475569; padding-left: 20px;">
+                     <h2>CONTACT</h2>
+                     <p>{{ header.email }}</p>
+                     <p>{{ header.phone }}</p>
+                     <p>{{ header.location }}</p>
+
+                     <h2>SKILLS</h2>
+                     {% for skill in skills %}
+                     <span class="badge" style="background: #475569; color: white;">{{ skill }}</span>
+                     {% endfor %}
+
+                     <h2>EDUCATION</h2>
+                     {% for edu in education %}
+                     <div class="mb-2">
+                        <div style="font-weight: bold; color: white;">{{ edu.degree }}</div>
+                        <div style="font-size: 9pt; color: #94a3b8;">{{ edu.institution }}</div>
+                     </div>
+                     {% endfor %}
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    {# --- STANDARD LAYOUT (Fallthrough) --- #}
+    {% else %}
+    <div class="header">
+        <h1>{{ header.full_name }}</h1>
+        <div class="sub-header">{{ header.title }}</div>
+        <div class="contact-info">
+             {{ header.email }}
+             {% if header.phone %} | {{ header.phone }} {% endif %}
+             {% if header.location %} | {{ header.location }} {% endif %}
+        </div>
+    </div>
+
+    <div class="p-4">
+        <h2>SUMMARY</h2>
+        <p>{{ summary }}</p>
+
+        <h2>EXPERIENCE</h2>
+        {% for exp in experience %}
+        <div class="mb-3">
+             <table width="100%">
+                <tr>
+                    <td><h3>{{ exp.role }}</h3></td>
+                    <td class="text-right" style="font-size: 9pt; color: #666;">{{ exp.duration }}</td>
+                </tr>
+             </table>
+             <div style="color: {{ config.accent }}; margin-bottom: 5px;">{{ exp.company }}</div>
+             <ul>
+                 {% for ach in exp.achievements %}
+                 <li>{{ ach }}</li>
+                 {% endfor %}
+             </ul>
+        </div>
+        {% endfor %}
+
+        <h2>SKILLS</h2>
+        <div>
+            {% for skill in skills %}
+            <span class="badge" style="background: {{ config.accent }}20; color: #333; border: 1px solid {{ config.accent }}40;">{{ skill }}</span>
+            {% endfor %}
+        </div>
+
+        <h2>EDUCATION</h2>
+         {% for edu in education %}
+         <div class="mb-2">
+            <div style="font-weight: bold;">{{ edu.degree }}</div>
+            <div>{{ edu.institution }} <span style="font-size: 9pt; color: #666;">({{ edu.year }})</span></div>
+         </div>
+         {% endfor %}
+    </div>
+    {% endif %}
+
+</body>
+</html>

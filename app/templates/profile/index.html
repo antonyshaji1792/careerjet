@@ -1,0 +1,1584 @@
+{% extends "base.html" %}
+
+{% block head %}
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/profile-editor.css') }}">
+<style>
+    /* Profile Header Styles */
+    .profile-header-wrapper {
+        margin-bottom: 2rem;
+    }
+
+    .profile-header-card {
+        background: var(--white);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 2rem;
+        border: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    .profile-header-left {
+        display: flex;
+        gap: 2rem;
+        flex: 1;
+    }
+
+    .profile-photo-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .profile-photo-ring {
+        position: relative;
+        width: 140px;
+        height: 140px;
+    }
+
+    .progress-ring {
+        transform: rotate(-90deg);
+    }
+
+    .progress-ring-circle {
+        transition: stroke-dashoffset 0.35s;
+        transform-origin: 50% 50%;
+    }
+
+    .profile-photo {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 4px solid white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        transition: opacity 0.3s ease;
+    }
+
+    .profile-photo:hover {
+        opacity: 0.8;
+    }
+
+    .profile-photo-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 50%;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+    }
+
+    .profile-photo:hover .profile-photo-overlay {
+        display: flex;
+    }
+
+    .profile-photo-overlay i {
+        color: white;
+        font-size: 24px;
+    }
+
+    .profile-photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .profile-completion {
+        margin-top: 0.5rem;
+        font-weight: 700;
+        font-size: 1.125rem;
+        color: #10b981;
+    }
+
+    .profile-info {
+        flex: 1;
+    }
+
+    .profile-name {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin: 0;
+    }
+
+    .profile-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 0.25rem;
+    }
+
+    .profile-company {
+        font-size: 0.9375rem;
+        color: var(--gray);
+        margin-bottom: 1.5rem;
+    }
+
+    .profile-details-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.875rem 2rem;
+    }
+
+    .profile-detail-item {
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        font-size: 0.875rem;
+        color: var(--dark);
+    }
+
+    .profile-detail-item i:first-child {
+        color: var(--gray);
+        width: 16px;
+        text-align: center;
+    }
+
+    .profile-header-right {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 1rem;
+    }
+
+    .profile-update-info {
+        text-align: right;
+    }
+
+    .profile-action-card {
+        background: #fef3c7;
+        padding: 1rem 1.25rem;
+        border-radius: 0.5rem;
+        border: 1px solid #fde68a;
+    }
+
+    .btn-missing-details {
+        background: #ef4444;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s;
+        box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+    }
+
+    .btn-missing-details:hover {
+        background: #dc2626;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+    }
+
+    /* Existing profile container styles */
+    .profile-container {
+        display: grid;
+        grid-template-columns: 250px 1fr;
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+
+    .profile-sidebar {
+        position: sticky;
+        top: 90px;
+        height: fit-content;
+    }
+
+    .quick-links {
+        background: var(--white);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 1.5rem;
+    }
+
+    .quick-links h3 {
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: var(--dark);
+    }
+
+    .quick-links-list {
+        list-style: none;
+    }
+
+    .quick-link-item {
+        margin-bottom: 0.5rem;
+    }
+
+    .quick-link-item a {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        color: var(--dark);
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: color 0.2s;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .quick-link-item:last-child a {
+        border-bottom: none;
+    }
+
+    .quick-link-item a:hover {
+        color: var(--primary);
+    }
+
+    .quick-link-item a.active {
+        color: var(--primary);
+        font-weight: 600;
+    }
+
+    .quick-link-action {
+        color: var(--primary);
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .profile-main {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .profile-section {
+        background: var(--white);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 2rem;
+        border: 1px solid #f1f5f9;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    .section-header h2 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin: 0;
+    }
+
+    .section-action {
+        color: var(--primary);
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s;
+    }
+
+    .section-action:hover {
+        color: var(--primary-hover);
+        transform: translateX(2px);
+    }
+
+    .resume-upload-area {
+        background: #f8fafc;
+        border: 2px dashed #cbd5e1;
+        border-radius: 0.5rem;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s;
+    }
+
+    .resume-upload-area:hover {
+        border-color: var(--primary);
+        background: #f0f4ff;
+    }
+
+    .resume-file-display {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        padding: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .resume-file-icon {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .resume-file-info {
+        flex: 1;
+    }
+
+    .resume-file-name {
+        font-weight: 600;
+        font-size: 0.9375rem;
+        color: var(--dark);
+        margin-bottom: 0.25rem;
+    }
+
+    .resume-file-meta {
+        font-size: 0.75rem;
+        color: var(--gray);
+    }
+
+    .resume-file-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .icon-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 0.375rem;
+        border: 1px solid #e2e8f0;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: var(--gray);
+    }
+
+    .icon-btn:hover {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.375rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    .status-active {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .headline-display {
+        background: #f8fafc;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border-left: 4px solid var(--primary);
+        margin-bottom: 1rem;
+    }
+
+    .headline-text {
+        font-size: 0.9375rem;
+        color: var(--dark);
+        line-height: 1.6;
+    }
+
+    .skills-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.625rem;
+    }
+
+    .skill-tag {
+        background: #f1f5f9;
+        color: var(--dark);
+        padding: 0.5rem 1rem;
+        border-radius: 1.25rem;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s;
+    }
+
+    .skill-tag:hover {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+        transform: translateY(-2px);
+    }
+
+    .employment-item {
+        padding: 1.25rem 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .employment-item:last-child {
+        border-bottom: none;
+    }
+
+    .employment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 0.75rem;
+    }
+
+    .employment-title {
+        font-weight: 600;
+        font-size: 1rem;
+        color: var(--dark);
+        margin-bottom: 0.25rem;
+    }
+
+    .employment-company {
+        font-size: 0.875rem;
+        color: var(--gray);
+        margin-bottom: 0.25rem;
+    }
+
+    .employment-duration {
+        font-size: 0.8125rem;
+        color: var(--gray);
+    }
+
+    .employment-notice {
+        background: #fef3c7;
+        color: #92400e;
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.375rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .employment-description {
+        font-size: 0.875rem;
+        color: var(--gray);
+        line-height: 1.6;
+        margin-top: 0.75rem;
+    }
+
+    .education-item {
+        padding: 1rem 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .education-item:last-child {
+        border-bottom: none;
+    }
+
+    .education-degree {
+        font-weight: 600;
+        font-size: 0.9375rem;
+        color: var(--dark);
+        margin-bottom: 0.25rem;
+    }
+
+    .education-school {
+        font-size: 0.875rem;
+        color: var(--gray);
+        margin-bottom: 0.25rem;
+    }
+
+    .education-year {
+        font-size: 0.8125rem;
+        color: var(--gray);
+    }
+
+    .add-more-links {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+
+    .add-more-link {
+        color: var(--primary);
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s;
+    }
+
+    .add-more-link:hover {
+        color: var(--primary-hover);
+        transform: translateX(4px);
+    }
+
+    .it-skills-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .it-skills-table th {
+        background: #f8fafc;
+        padding: 0.75rem 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: var(--gray);
+        font-size: 0.8125rem;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .it-skills-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.875rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: var(--gray);
+    }
+
+    .empty-state-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-state-text {
+        font-size: 0.9375rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .profile-summary-text {
+        font-size: 0.9375rem;
+        color: var(--dark);
+        line-height: 1.7;
+    }
+
+    .accomplishment-item {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .accomplishment-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .accomplishment-title {
+        font-weight: 600;
+        font-size: 0.9375rem;
+        color: var(--dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .accomplishment-subtitle {
+        font-size: 0.8125rem;
+        color: var(--gray);
+        margin-bottom: 0.5rem;
+    }
+
+    .accomplishment-link {
+        color: var(--primary);
+        text-decoration: none;
+        font-size: 0.875rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    .accomplishment-link:hover {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 968px) {
+        .profile-container {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-sidebar {
+            position: static;
+        }
+
+        .profile-header-card {
+            flex-direction: column;
+        }
+
+        .profile-header-left {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .profile-details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-header-right {
+            width: 100%;
+            align-items: stretch;
+        }
+
+        .btn-missing-details {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Profile Header -->
+<div class="profile-header-wrapper">
+    <div class="profile-header-card">
+        <div class="profile-header-left">
+            <!-- Profile Photo with Completion Ring -->
+            <div class="profile-photo-container">
+                <div class="profile-photo-ring">
+                    <svg class="progress-ring" width="140" height="140">
+                        <circle class="progress-ring-circle-bg" stroke="#e5e7eb" stroke-width="4" fill="transparent"
+                            r="66" cx="70" cy="70" />
+                        <circle class="progress-ring-circle" stroke="#10b981" stroke-width="4" fill="transparent" r="66"
+                            cx="70" cy="70" style="stroke-dasharray: 414.69; stroke-dashoffset: {{ '%.3f' % (414.69 * (1 - (completion or 0)/100)) }};" />
+                    </svg>
+                    <div class="profile-photo" onclick="document.getElementById('profilePictureInput').click()">
+                        {% if current_user.profile and current_user.profile.profile_picture_path %}
+                        <img src="{{ url_for('static', filename=current_user.profile.profile_picture_path) }}"
+                            alt="Profile Photo" id="profilePhotoImg">
+                        {% else %}
+                        <img src="https://ui-avatars.com/api/?name={{ current_user.email.split('@')[0] }}&background=6366f1&color=fff&size=120"
+                            alt="Profile Photo" id="profilePhotoImg">
+                        {% endif %}
+                        <div class="profile-photo-overlay">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-completion">{{ completion or 0 }}%</div>
+                <input type="file" id="profilePictureInput" accept="image/*" style="display: none;" onchange="uploadProfilePicture(this)">
+            </div>
+
+            <!-- Profile Info -->
+            <div class="profile-info">
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                    <h1 class="profile-name">{{ (current_user.personal_details.full_name if
+                        current_user.personal_details else None) or current_user.email.split('@')[0].title() }}</h1>
+                    <button class="icon-btn" style="width: 28px; height: 28px;" onclick="openBasicInfoModal()">
+                        <i class="fas fa-pencil-alt" style="font-size: 0.75rem;"></i>
+                    </button>
+                </div>
+                <div class="profile-title">{{ current_user.current_job.job_title if current_user.current_job else 'Add
+                    Job Title' }}</div>
+                <div class="profile-company">at {{ current_user.current_job.company_name if current_user.current_job
+                    else 'Unknown' }}</div>
+
+                <div class="profile-details-grid">
+                    <div class="profile-detail-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>{{ current_user.current_location or 'Add Location' }}</span>
+                    </div>
+                    <div class="profile-detail-item">
+                        <i class="fas fa-phone-alt"></i>
+                        <span>{{ (current_user.personal_details.phone if current_user.personal_details else None) or
+                            'Add Phone' }}</span>
+                        {% if current_user.personal_details and current_user.personal_details.phone %}
+                        <i class="fas fa-check-circle" style="color: #10b981; font-size: 0.875rem;"></i>
+                        {% endif %}
+                    </div>
+                    <div class="profile-detail-item">
+                        <i class="fas fa-briefcase"></i>
+                        <span>{{ current_user.total_experience }} Years</span>
+                    </div>
+                    <div class="profile-detail-item">
+                        <i class="fas fa-envelope"></i>
+                        <span>{{ current_user.email }}</span>
+                        <i class="fas fa-check-circle" style="color: #10b981; font-size: 0.875rem;"></i>
+                    </div>
+                    <div class="profile-detail-item">
+                        <i class="fas fa-rupee-sign"></i>
+                        <span>₹ {{ "{:,}".format(current_user.career_profile.current_salary) if
+                            (current_user.career_profile and current_user.career_profile.current_salary) else 'Add
+                            Salary' }}</span>
+                    </div>
+                    <div class="profile-detail-item">
+                        <i class="fas fa-clock"></i>
+                        <span>{{ 'Serving Notice Period' if (current_user.current_job and
+                            current_user.current_job.is_serving_notice) else ('Immeadiate Joiner' if
+                            (current_user.career_profile and current_user.career_profile.notice_period_days == 0) else
+                            (current_user.career_profile.notice_period_days ~ ' Days Notice' if
+                            (current_user.career_profile and current_user.career_profile.notice_period_days) else 'Add
+                            Notice Period')) }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Actions -->
+        <div class="profile-header-right">
+            <div class="profile-update-info">
+                <span style="color: var(--gray); font-size: 0.8125rem;">Profile last updated - </span>
+                <span style="font-weight: 600; font-size: 0.8125rem;">{{ current_user.created_at.strftime('%d %b, %Y')
+                    }}</span>
+            </div>
+
+            <div class="profile-action-card" onclick="editSummary()" style="cursor: pointer;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                    <i class="fas fa-file-alt" style="color: var(--primary); font-size: 1.25rem;"></i>
+                    <span style="font-weight: 600; font-size: 0.9375rem; color: var(--dark);">Add job summary</span>
+                    <span style="color: #10b981; font-size: 0.8125rem; font-weight: 700; margin-left: auto;">↑ 8%</span>
+                </div>
+            </div>
+
+            <button id="btn-missing-details" class="btn-missing-details" onclick="openMissingDetails('{{ first_missing or '' }}')">
+                <i class="fas fa-exclamation-circle"></i>
+                Add {{ missing_count or 0 }} missing details
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="profile-container">
+    <!-- Left Sidebar -->
+    <aside class="profile-sidebar">
+        <div class="quick-links">
+            <h3>Quick links</h3>
+            <ul class="quick-links-list">
+                <li class="quick-link-item">
+                    <a href="#resume" class="active">
+                        Resume
+                        <span class="quick-link-action">Update</span>
+                    </a>
+                </li>
+                <li class="quick-link-item">
+                    <a href="#resume-headline">Resume headline</a>
+                </li>
+                <li class="quick-link-item">
+                    <a href="#key-skills">Key skills</a>
+                </li>
+                <li class="quick-link-item">
+                    <a href="#employment">Employment</a>
+                </li>
+                <li class="quick-link-item">
+                    <a href="#education">
+                        Education
+                        <span class="quick-link-action">Add</span>
+                    </a>
+                </li>
+                <li class="quick-link-item">
+                    <a href="#it-skills">IT skills</a>
+                </li>
+                <li class="quick-link-item">
+                    <a href="#projects">
+                        Projects
+                        <span class="quick-link-action">Add</span>
+                    </a>
+                </li>
+                <li class="quick-link-item">
+                    <a href="#profile-summary">Profile summary</a>
+                </li>
+                <li class="quick-link-item">
+                    <a href="#accomplishments">Accomplishments</a>
+                </li>
+                <li class="quick-link-item">
+                    <a href="#career-profile">Career profile</a>
+                </li>
+                <li class="quick-link-item">
+                    <a href="#personal-details">Personal details</a>
+                </li>
+                <li class="quick-link-item">
+                    <a href="#languages">Languages</a>
+                </li>
+                <li class="quick-link-item">
+                    <a href="#diversity-inclusion">Diversity & inclusion</a>
+                </li>
+            </ul>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="profile-main">
+        <!-- Resume Section -->
+        <section id="resume" class="profile-section">
+            <div class="section-header">
+                <h2>Resume</h2>
+                <a href="#" class="section-action">
+                    Update <i class="fas fa-chevron-right"></i>
+                </a>
+            </div>
+
+            {% if resume %}
+            <div class="resume-file-display">
+                <div class="resume-file-icon">
+                    <i class="fas fa-file-pdf"></i>
+                </div>
+                <div class="resume-file-info">
+                    <div class="resume-file-name">
+                        {{ (resume.file_path or 'resume.pdf').split('/')[-1].split('\\')[-1] }}
+                    </div>
+                    <div class="resume-file-meta">
+                        Uploaded on {{ resume.uploaded_at.strftime('%b %d, %Y') }}
+                    </div>
+                </div>
+                <div class="resume-file-actions">
+                    <button class="icon-btn" title="Download">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="icon-btn" title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            <div style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 1rem;">
+                <span class="status-badge status-active">ACTIVE</span>
+                <button onclick="autofillProfile()" class="btn btn-sm"
+                    style="background: #10b981; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; transition: all 0.2s;">
+                    <i class="fas fa-magic"></i> Auto-fill Profile from Resume
+                </button>
+            </div>
+
+            <details style="margin-top: 1.5rem;">
+                <summary style="cursor: pointer; color: var(--primary); font-weight: 600; font-size: 0.875rem;">
+                    Update resume
+                </summary>
+                <form action="{{ url_for('profile.upload_resume') }}" method="POST" enctype="multipart/form-data"
+                    style="margin-top: 1rem;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                    <div class="form-group">
+                        <input type="file" name="resume" class="form-control" accept=".pdf,.doc,.docx" required>
+                        <p style="font-size: 0.75rem; color: var(--gray); margin-top: 0.5rem;">
+                            Supported Formats: doc, docx, rtf, pdf, upto 2 MB
+                        </p>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload"></i> Update resume
+                    </button>
+                </form>
+            </details>
+            {% else %}
+            <div class="resume-upload-area">
+                <div class="empty-state-icon">📄</div>
+                <p class="empty-state-text">Upload your resume to get started</p>
+                <form action="{{ url_for('profile.upload_resume') }}" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                    <div class="form-group">
+                        <input type="file" name="resume" class="form-control" accept=".pdf,.doc,.docx" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload"></i> Upload Resume
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- Resume Headline -->
+        <section id="resume-headline" class="profile-section">
+            <div class="section-header">
+                <h2>Resume headline</h2>
+                <a href="#" class="section-action" onclick="editHeadline(); return false;">
+                    <i class="fas fa-pencil-alt"></i>
+                </a>
+            </div>
+            <div class="headline-display">
+                <p class="headline-text">
+                    {% if current_user.headline %}
+                    {{ current_user.headline.headline }}
+                    {% else %}
+                    <span style="color: var(--gray); font-style: italic;">Add a brief headline to highlight your
+                        professional identity</span>
+                    {% endif %}
+                </p>
+            </div>
+        </section>
+
+        <!-- Key Skills -->
+        <section id="key-skills" class="profile-section">
+            <div class="section-header">
+                <h2>Key skills</h2>
+                <a href="#" class="section-action" onclick="addSkill(); return false;">
+                    <i class="fas fa-plus"></i> Add
+                </a>
+            </div>
+            <div class="skills-container">
+                {% if current_user.key_skills %}
+                {% for skill in current_user.key_skills %}
+                <span class="skill-tag">
+                    {{ skill.skill_name }}
+                    <button onclick="deleteSkill({{ skill.id }}); return false;" class="skill-delete"
+                        title="Remove skill">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </span>
+                {% endfor %}
+                {% else %}
+                <p style="color: var(--gray); font-size: 0.875rem; padding: 1rem 0;">No skills added yet. Add skills to
+                    get better job matches.</p>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Employment -->
+        <section id="employment" class="profile-section">
+            <div class="section-header">
+                <h2>Employment</h2>
+                <a href="#" class="section-action" onclick="addEmployment(); return false;">
+                    <i class="fas fa-plus"></i> Add
+                </a>
+            </div>
+
+            {% if current_user.employments %}
+            {% for emp in current_user.employments %}
+            <div class="employment-item">
+                <div class="employment-header">
+                    <div>
+                        <div class="employment-title">{{ emp.job_title }}</div>
+                        <div class="employment-company">{{ emp.company_name }}</div>
+                        <div class="employment-duration">
+                            {{ emp.employment_type or 'Full-time' }} |
+                            {{ emp.start_date.strftime('%b %Y') if emp.start_date else 'N/A' }} to
+                            {% if emp.is_current %}
+                            Present
+                            {% else %}
+                            {{ emp.end_date.strftime('%b %Y') if emp.end_date else 'N/A' }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="icon-btn" onclick="editEmployment({{ emp.id }})" title="Edit">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                        <button class="icon-btn" onclick="deleteEmployment({{ emp.id }})" title="Delete">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+
+                {% if emp.is_serving_notice %}
+                <div class="employment-notice">Serving Notice Period{% if emp.notice_period_days %} ({{
+                    emp.notice_period_days }} days){% endif %}</div>
+                {% endif %}
+
+                {% if emp.description %}
+                <div class="employment-description">
+                    {{ emp.description }}
+                </div>
+                {% endif %}
+
+                {% if emp.key_skills %}
+                <div class="employment-skills">
+                    <strong>Key Skills:</strong> {{ emp.key_skills }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="empty-state">
+                <p style="color: var(--gray); text-align: center; padding: 2rem;">
+                    <i class="fas fa-briefcase"
+                        style="font-size: 2rem; display: block; margin-bottom: 1rem; opacity: 0.3;"></i>
+                    No employment history added yet. Click the "+ Add" button to add your work experience.
+                </p>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- Education -->
+        <section id="education" class="profile-section">
+            <div class="section-header">
+                <h2>Education</h2>
+                <a href="#" class="section-action" onclick="addEducation(); return false;">
+                    <i class="fas fa-plus"></i> Add
+                </a>
+            </div>
+
+            {% if current_user.educations %}
+            {% for edu in current_user.educations %}
+            <div class="education-item">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div>
+                        <div class="education-degree">{{ edu.degree }}</div>
+                        <div class="education-school">{{ edu.institution }}</div>
+                        <div class="education-year">
+                            {{ edu.end_year if edu.end_year else 'Pursuing' }} | {{ edu.education_type or 'Full Time' }}
+                            {% if edu.grade %} | Grade: {{ edu.grade }}{% endif %}
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="icon-btn" onclick="editEducation({{ edu.id }})" title="Edit">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                        <button class="icon-btn" onclick="deleteEducation({{ edu.id }})" title="Delete">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="empty-state">
+                <p style="color: var(--gray); text-align: center; padding: 2rem;">No education details added yet.</p>
+            </div>
+            {% endif %}
+
+            <div class="add-more-links">
+                <a href="#" class="add-more-link" onclick="addEducation(); return false;">
+                    <i class="fas fa-plus-circle"></i> Add more education
+                </a>
+            </div>
+        </section>
+
+        <!-- IT Skills -->
+        <section id="it-skills" class="profile-section">
+            <div class="section-header">
+                <h2>IT skills</h2>
+                <a href="#" class="section-action" onclick="addITSkill(); return false;">
+                    <i class="fas fa-plus"></i> Add
+                </a>
+            </div>
+
+            {% if current_user.it_skills %}
+            <table class="it-skills-table">
+                <thead>
+                    <tr>
+                        <th>Skills</th>
+                        <th>Version</th>
+                        <th>Last used</th>
+                        <th>Experience</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for skill in current_user.it_skills %}
+                    <tr>
+                        <td><strong>{{ skill.skill_name }}</strong></td>
+                        <td>{{ skill.version or '-' }}</td>
+                        <td>{{ skill.last_used_year or '-' }}</td>
+                        <td>{{ skill.experience_years }} Years {{ skill.experience_months }} Months</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="icon-btn" onclick="editITSkill({{ skill.id }})" title="Edit">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </button>
+                                <button class="icon-btn" onclick="deleteITSkill({{ skill.id }})" title="Delete">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p style="color: var(--gray); text-align: center; padding: 2rem;">No IT skills added yet.</p>
+            {% endif %}
+        </section>
+
+        <!-- Projects -->
+        <section id="projects" class="profile-section">
+            <div class="section-header">
+                <h2>Projects</h2>
+                <a href="#" class="section-action" onclick="addProject(); return false;">
+                    <i class="fas fa-plus"></i> Add
+                </a>
+            </div>
+
+            {% if current_user.projects %}
+            {% for proj in current_user.projects %}
+            <div class="employment-item"> <!-- Reusing employment class for styling -->
+                <div class="employment-header">
+                    <div>
+                        <div class="employment-title">{{ proj.title }}</div>
+                        <div class="employment-company">{{ proj.client or 'Internal Project' }}</div>
+                        <div class="employment-duration">
+                            {{ proj.project_status }} |
+                            {{ proj.start_date.strftime('%b %Y') if proj.start_date else 'N/A' }}
+                            {% if proj.end_date %} to {{ proj.end_date.strftime('%b %Y') }}{% endif %}
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="icon-btn" onclick="editProject({{ proj.id }})" title="Edit">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                        <button class="icon-btn" onclick="deleteProject({{ proj.id }})" title="Delete">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                {% if proj.description %}
+                <div class="employment-description">{{ proj.description }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">📁</div>
+                <p class="empty-state-text">
+                    Stand out to employers by adding details about projects that you have done so far
+                </p>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- Profile Summary -->
+        <section id="profile-summary" class="profile-section">
+            <div class="section-header">
+                <h2>Profile summary</h2>
+                <a href="#" class="section-action" onclick="editSummary(); return false;">
+                    <i class="fas fa-pencil-alt"></i>
+                </a>
+            </div>
+            <p class="profile-summary-text">
+                {% if current_user.summary %}
+                {{ current_user.summary.summary }}
+                {% else %}
+                <span style="color: var(--gray); font-style: italic;">Add a summary of your professional background and
+                    career goals</span>
+                {% endif %}
+            </p>
+        </section>
+
+        <!-- Accomplishments -->
+        <section id="accomplishments" class="profile-section">
+            <div class="section-header">
+                <h2>Accomplishments</h2>
+            </div>
+
+            {% for type_id, type_title, type_label in [
+            ('online_profile', 'Online profile', 'Add link to online professional profiles (e.g. LinkedIn, GitHub)'),
+            ('certification', 'Certification', 'Add your professional certifications'),
+            ('publication', 'Publication', 'Add your research papers or online publications'),
+            ('award', 'Award', 'Add honors and awards you have received')
+            ] %}
+            <div class="accomplishment-item">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div style="flex: 1;">
+                        <div class="accomplishment-title">{{ type_title }}</div>
+                        <div class="accomplishment-subtitle">{{ type_label }}</div>
+
+                        {% set found = false %}
+                        {% if current_user.accomplishments %}
+                        {% for acc in current_user.accomplishments if acc.type == type_id %}
+                        <div style="margin-top: 0.5rem; display: flex; align-items: center; gap: 1rem;">
+                            {% if acc.url %}
+                            <a href="{{ acc.url }}" class="accomplishment-link" target="_blank">
+                                {{ acc.title }} <i class="fas fa-external-link-alt"></i>
+                            </a>
+                            {% else %}
+                            <span style="font-weight: 500;">{{ acc.title }}</span>
+                            {% endif %}
+                            <div class="action-buttons">
+                                <button class="icon-btn" onclick="editAccomplishment({{ acc.id }})" title="Edit">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </button>
+                                <button class="icon-btn" onclick="deleteAccomplishment({{ acc.id }})" title="Delete">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% set found = true %}
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+                    {% if not found %}
+                    <a href="#" class="section-action"
+                        onclick="addAccomplishment('{{ type_id }}'); return false;">Add</a>
+                    {% else %}
+                    <a href="#" class="section-action" onclick="addAccomplishment('{{ type_id }}'); return false;"><i
+                            class="fas fa-plus"></i> Add more</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </section>
+
+        <!-- Career Profile -->
+        <section id="career-profile" class="profile-section">
+            <div class="section-header">
+                <h2>Career profile</h2>
+                {% if current_user.career_profile %}
+                <a href="#" class="section-action" onclick="editCareerProfile(); return false;">
+                    <i class="fas fa-pencil-alt"></i>
+                </a>
+                {% endif %}
+            </div>
+            {% if current_user.career_profile %}
+            {% set cp = current_user.career_profile %}
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
+                <div>
+                    <div style="font-size: 0.8125rem; color: var(--gray); margin-bottom: 0.25rem;">Current Industry
+                    </div>
+                    <div style="font-weight: 500;">{{ cp.current_industry or 'Not specified' }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.8125rem; color: var(--gray); margin-bottom: 0.25rem;">Preferred Industry
+                    </div>
+                    <div style="font-weight: 500;">{{ cp.preferred_industries or 'Not specified' }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.8125rem; color: var(--gray); margin-bottom: 0.25rem;">Expected Salary</div>
+                    <div style="font-weight: 500;">{{ cp.expected_salary or 'Not specified' }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.8125rem; color: var(--gray); margin-bottom: 0.25rem;">Preferred Location
+                    </div>
+                    <div style="font-weight: 500;">{{ cp.preferred_work_location or 'Not specified' }}</div>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">💼</div>
+                <p class="empty-state-text">
+                    Add your career preferences to help us recommend relevant jobs
+                </p>
+                <a href="#" class="btn btn-primary" onclick="editCareerProfile(); return false;">Add career profile</a>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- Personal Details -->
+        <section id="personal-details" class="profile-section">
+            <div class="section-header">
+                <h2>Personal details</h2>
+                <a href="#" class="section-action" onclick="editPersonalDetails(); return false;">
+                    <i class="fas fa-pencil-alt"></i>
+                </a>
+            </div>
+
+            {% if current_user.personal_details %}
+            {% set pd = current_user.personal_details %}
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem 3rem;">
+                <!-- Left Column -->
+                <div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="font-size: 0.8125rem; color: var(--gray); margin-bottom: 0.5rem;">Personal</div>
+                        <div style="font-weight: 500; font-size: 0.9375rem; color: var(--dark);">
+                            {{ pd.gender or 'Not specified' }}, {{ pd.marital_status or 'Not specified' }}
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="font-size: 0.8125rem; color: var(--gray); margin-bottom: 0.5rem;">Date of birth
+                        </div>
+                        <div style="font-weight: 500; font-size: 0.9375rem; color: var(--dark);">
+                            {{ pd.date_of_birth.strftime('%d %b %Y') if pd.date_of_birth else 'Not specified' }}
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="font-size: 0.8125rem; color: var(--gray); margin-bottom: 0.5rem;">Category</div>
+                        <div style="font-weight: 500; font-size: 0.9375rem; color: var(--dark);">{{ pd.category or
+                            'General' }}</div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="font-size: 0.8125rem; color: var(--gray); margin-bottom: 0.5rem;">Work permit</div>
+                        <div style="font-weight: 500; font-size: 0.9375rem; color: var(--dark);">{{
+                            pd.work_permit_country or 'Not specified' }}</div>
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="font-size: 0.8125rem; color: var(--gray); margin-bottom: 0.5rem;">Address</div>
+                        <div style="font-weight: 500; font-size: 0.9375rem; color: var(--dark); line-height: 1.6;">
+                            {{ pd.address or '' }}<br>
+                            {{ pd.city or '' }}{% if pd.state %}, {{ pd.state }}{% endif %}{% if pd.country %}, {{
+                            pd.country }}{% endif %} {{ pd.pincode or '' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <p style="color: var(--gray); text-align: center; padding: 2rem;">No personal details added yet.</p>
+            {% endif %}
+        </section>
+
+        <!-- Languages -->
+        <section id="languages" class="profile-section">
+            <div class="section-header">
+                <h2>Languages</h2>
+                <a href="#" class="section-action" onclick="addLanguage(); return false;">
+                    Add languages <i class="fas fa-plus"></i>
+                </a>
+            </div>
+
+            {% if current_user.languages %}
+            <table class="it-skills-table">
+                <thead>
+                    <tr>
+                        <th>Languages</th>
+                        <th>Proficiency</th>
+                        <th>Read</th>
+                        <th>Write</th>
+                        <th>Speak</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lang in current_user.languages %}
+                    <tr>
+                        <td><strong>{{ lang.language_name }}</strong></td>
+                        <td>{{ lang.proficiency or 'Not specified' }}</td>
+                        <td><i class="fas {{ 'fa-check-circle' if lang.can_read else 'fa-times-circle' }}"
+                                style="color: {{ '#10b981' if lang.can_read else '#ef4444' }};"></i></td>
+                        <td><i class="fas {{ 'fa-check-circle' if lang.can_write else 'fa-times-circle' }}"
+                                style="color: {{ '#10b981' if lang.can_write else '#ef4444' }};"></i></td>
+                        <td><i class="fas {{ 'fa-check-circle' if lang.can_speak else 'fa-times-circle' }}"
+                                style="color: {{ '#10b981' if lang.can_speak else '#ef4444' }};"></i></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="icon-btn" onclick="editLanguage({{ lang.id }})" title="Edit">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </button>
+                                <button class="icon-btn" onclick="deleteLanguage({{ lang.id }})" title="Delete">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p style="color: var(--gray); text-align: center; padding: 2rem;">No languages added yet.</p>
+            {% endif %}
+        </section>
+
+        <!-- Diversity & Inclusion -->
+        <section id="diversity-inclusion" class="profile-section">
+            <div class="section-header">
+                <div>
+                    <h2 style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                        Diversity & inclusion
+                        <span
+                            style="background: #e0e7ff; color: #4338ca; font-size: 0.625rem; font-weight: 700; padding: 0.25rem 0.5rem; border-radius: 0.25rem; text-transform: uppercase;">New</span>
+                    </h2>
+                    <p style="font-size: 0.8125rem; color: var(--gray); margin: 0.5rem 0 0 0; font-weight: 400;">
+                        Share details to attract recruiters who value people from different backgrounds
+                    </p>
+                </div>
+                <a href="#" class="section-action" onclick="editDiversity(); return false;">
+                    <i class="fas fa-pencil-alt"></i>
+                </a>
+            </div>
+
+            {% if current_user.diversity_info %}
+            {% set di = current_user.diversity_info %}
+            <div style="margin-bottom: 1.5rem;">
+                <div style="font-size: 0.8125rem; color: var(--gray); margin-bottom: 0.5rem;">Disability status</div>
+                <div style="font-weight: 500; font-size: 0.9375rem; color: var(--dark);">
+                    {{ di.disability_type if di.has_disability else 'Do not have disability' }}
+                </div>
+            </div>
+
+            <div class="add-more-links">
+                {% if di.has_military_experience %}
+                <div style="margin-bottom: 1rem;">
+                    <div style="font-size: 0.8125rem; color: var(--gray); margin-bottom: 0.25rem;">Military Experience
+                    </div>
+                    <div style="font-weight: 500;">{{ di.military_branch }} ({{ di.military_start_date.strftime('%Y') if
+                        di.military_start_date else '' }} - {{ di.military_end_date.strftime('%Y') if
+                        di.military_end_date else 'Present' }})</div>
+                </div>
+                {% endif %}
+
+                {% if di.has_career_break %}
+                <div style="margin-bottom: 1rem;">
+                    <div style="font-size: 0.8125rem; color: var(--gray); margin-bottom: 0.25rem;">Career Break</div>
+                    <div style="font-weight: 500;">{{ di.career_break_reason }} ({{
+                        di.career_break_start_date.strftime('%Y') if di.career_break_start_date else '' }} - {{
+                        di.career_break_end_date.strftime('%Y') if di.career_break_end_date else 'Present' }})</div>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <p style="color: var(--gray); text-align: center; padding: 2rem;">No diversity details added yet.</p>
+            {% endif %}
+        </section>
+    </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Smooth scroll for quick links
+    document.querySelectorAll('.quick-link-item a').forEach(link => {
+        link.addEventListener('click', function (e) {
+            const href = this.getAttribute('href');
+            if (href.startsWith('#')) {
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                    // Update active state
+                    document.querySelectorAll('.quick-link-item a').forEach(a => a.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            }
+        });
+    });
+
+    // Highlight active section on scroll
+    const sections = document.querySelectorAll('.profile-section');
+    const quickLinks = document.querySelectorAll('.quick-link-item a');
+
+    window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            const sectionHeight = section.clientHeight;
+            if (window.pageYOffset >= sectionTop - 150) {
+                current = section.getAttribute('id');
+            }
+        });
+
+        quickLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === `#${current}`) {
+                link.classList.add('active');
+            }
+        });
+    });
+
+    // Auto-fill profile from resume
+    async function autofillProfile() {
+        const button = event.target.closest('button');
+        const originalHTML = button.innerHTML;
+
+        // Show loading state
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Extracting data...';
+
+        try {
+            const response = await fetch('{{ url_for("profile.autofill") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Show success message
+                button.innerHTML = '<i class="fas fa-check-circle"></i> Profile Updated!';
+                button.style.background = '#10b981';
+
+                // Show detailed success notification
+                const fieldsUpdated = result.fields_updated || [];
+                if (fieldsUpdated.length > 0) {
+                    alert(`✅ Profile auto-filled successfully!\n\nUpdated fields:\n${fieldsUpdated.map(f => '• ' + f.replace('_', ' ')).join('\n')}\n\nPlease review and save your profile.`);
+                } else {
+                    alert('✅ Profile already contains all extractable information from your resume.');
+                }
+
+                // Reload page to show updated data
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                // Show error
+                button.innerHTML = '<i class="fas fa-exclamation-circle"></i> Failed';
+                button.style.background = '#ef4444';
+                alert('❌ ' + (result.message || 'Failed to auto-fill profile. Please try again.'));
+
+                // Reset button after 3 seconds
+                setTimeout(() => {
+                    button.innerHTML = originalHTML;
+                    button.style.background = '#10b981';
+                    button.disabled = false;
+                }, 3000);
+            }
+        } catch (error) {
+            console.error('Autofill error:', error);
+            button.innerHTML = '<i class="fas fa-exclamation-circle"></i> Error';
+            button.style.background = '#ef4444';
+            alert('❌ An error occurred while auto-filling the profile.');
+
+            // Reset button after 3 seconds
+            setTimeout(() => {
+                button.innerHTML = originalHTML;
+                button.style.background = '#10b981';
+                button.disabled = false;
+            }, 3000);
+        }
+    }
+
+    // Upload profile picture
+    async function uploadProfilePicture(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch('/api/profile/upload-picture', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Update the image preview with the new picture URL
+                const img = document.getElementById('profilePhotoImg');
+                if (img) {
+                    img.src = result.picture_url + '?t=' + new Date().getTime();
+                }
+                
+                // Show success notification
+                const notification = document.createElement('div');
+                notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #10b981; color: white; padding: 1rem 1.5rem; border-radius: 0.5rem; z-index: 10000; box-shadow: 0 4px 6px rgba(0,0,0,0.1);';
+                notification.innerHTML = '<i class="fas fa-check-circle me-2"></i>' + result.message;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => notification.remove(), 3000);
+            } else {
+                alert('❌ ' + result.message);
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            alert('❌ Failed to upload profile picture');
+        }
+
+        // Reset input
+        input.value = '';
+    }
+</script>
+
+<!-- Profile Editor Scripts -->
+<script src="{{ url_for('static', filename='js/profile-editor.js') }}"></script>
+<script src="{{ url_for('static', filename='js/profile-editor-extended.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,23 @@
+# Test files and directories
+test_*.py
+test_*.txt
+tests/
+.pytest_cache/
+
+# Markdown files
+*.md
+
+# Python/Environment
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+instance/
+llm_debug.log
+*.png
+debug_endpoint.txt
+node_modules/
+dist/
+.venv/
+venv/
+env/

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <!-- Hero Card -->
+            <div class="card shadow-lg border-0 text-center mb-4 overflow-hidden">
+                <div
+                    class="card-header bg-primary text-white py-4 d-flex justify-content-center align-items-center gap-3">
+                    <i class="fas fa-check-circle display-4"></i>
+                    <div>
+                        <h2 class="mb-0 fw-bold">Interview Complete</h2>
+                        <p class="mb-0 opacity-75">Your transcript and metrics have been processed.</p>
+                    </div>
+                </div>
+                <div class="card-body p-5">
+                    <div class="mb-4">
+                        <!-- Simulated Readiness Gauge -->
+                        <div class="position-relative d-inline-block">
+                            <svg width="240" height="150" viewBox="0 0 240 120">
+                                <path d="M 20 110 A 100 100 0 0 1 220 110" fill="none" stroke="#e2e8f0"
+                                    stroke-width="20" stroke-linecap="round" />
+                                <path d="M 20 110 A 100 100 0 0 1 {{ 20 + result.readiness_score * 2 }} 110" fill="none"
+                                    stroke="var(--primary)" stroke-width="20" stroke-linecap="round"
+                                    style="transition: stroke-dashoffset 2s ease-out;" />
+                            </svg>
+                            <div class="position-absolute bottom-0 start-50 translate-middle-x mb-2">
+                                <h1 class="display-3 fw-bold mb-0">{{ result.readiness_score }}%</h1>
+                                <span class="badge bg-success">Strong Potential</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 class="fw-bold mb-3">Executive Summary</h4>
+                    <p class="lead text-muted px-lg-5 mb-4">
+                        {{ result.summary }}
+                    </p>
+
+                    <div class="row text-start g-4 mb-5">
+                        <div class="col-sm-6">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-success-subtle text-success p-3 rounded-circle">
+                                    <i class="fas fa-bolt"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0 fw-bold">Top Strength</h6>
+                                    <small>{{ result.top_strength }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-warning-subtle text-warning p-3 rounded-circle">
+                                    <i class="fas fa-lightbulb"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0 fw-bold">Growth Area</h6>
+                                    <small>{{ result.top_gap }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-3">
+                        <a href="{{ url_for('video_interview.report', session_id=result.session_id) }}"
+                            class="btn btn-primary btn-lg shadow-sm">
+                            <i class="fas fa-chart-line me-2"></i> View Detailed Performance Report
+                        </a>
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('video_interview.setup') }}"
+                                class="btn btn-outline-secondary flex-grow-1">
+                                <i class="fas fa-redo me-2"></i> Retake Simulation
+                            </a>
+                            <a href="{{ url_for('dashboard.index') }}" class="btn btn-light flex-grow-1">
+                                Back to Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center text-muted small">
+                <i class="fas fa-lock me-1"></i> This report is private and visible only to you.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <h1 class="display-6 fw-bold text-dark">My Support Requests</h1>
+        <a href="{{ url_for('contact.index') }}" class="btn btn-outline-primary rounded-pill px-4">New Request</a>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-muted small text-uppercase">
+                    <tr>
+                        <th class="ps-4 py-3">Subject</th>
+                        <th class="py-3">Status</th>
+                        <th class="py-3">Last Updated</th>
+                        <th class="pe-4 py-3 text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for thread in threads %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="fw-bold text-dark">{{ thread.subject }}</div>
+                        </td>
+                        <td>
+                            {% if thread.status == 'open' %}
+                            <span class="badge bg-warning-subtle text-warning px-3 py-2 rounded-pill">Open</span>
+                            {% elif thread.status == 'replied' %}
+                            <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill">Replied</span>
+                            {% else %}
+                            <span class="badge bg-light text-muted px-3 py-2 rounded-pill">Closed</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-muted small">
+                            {{ thread.updated_at.strftime('%b %d, %Y %H:%M') }}
+                        </td>
+                        <td class="pe-4 text-end">
+                            <a href="{{ url_for('contact.view_thread', thread_id=thread.id) }}"
+                                class="btn btn-sm btn-light rounded-pill px-3">View History</a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center py-5 text-muted">
+                            <i class="fas fa-inbox fa-3x mb-3 d-block opacity-25"></i>
+                            No requests found. Need help?
+                            <a href="{{ url_for('contact.index') }}" class="text-primary fw-bold">Contact us</a>.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

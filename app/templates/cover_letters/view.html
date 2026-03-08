@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    .view-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .cover-letter-display {
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 3rem;
+        font-family: 'Georgia', serif;
+        line-height: 1.8;
+        color: #1f2937;
+        white-space: pre-wrap;
+        margin-bottom: 2rem;
+    }
+
+    .action-bar {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-copy {
+        background: #10b981;
+        color: white;
+    }
+
+    .btn-copy:hover {
+        background: #059669;
+    }
+
+    .btn-download {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .btn-download:hover {
+        background: #2563eb;
+    }
+
+    .edit-mode {
+        display: none;
+    }
+
+    .edit-mode.active {
+        display: block;
+    }
+
+    .view-mode.hidden {
+        display: none;
+    }
+
+    textarea.edit-textarea {
+        width: 100%;
+        min-height: 500px;
+        padding: 1.5rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-family: 'Georgia', serif;
+        font-size: 1rem;
+        line-height: 1.8;
+        resize: vertical;
+    }
+
+    textarea.edit-textarea:focus {
+        outline: none;
+        border-color: #6366f1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="view-container">
+    <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1 style="margin: 0 0 0.5rem 0;">📝 Cover Letter</h1>
+            <p style="color: #6b7280; margin: 0;">
+                Created {{ cover_letter.created_at.strftime('%B %d, %Y') }}
+            </p>
+        </div>
+        <a href="{{ url_for('cover_letters.index') }}" class="btn btn-outline">
+            ← Back to List
+        </a>
+    </div>
+
+    <!-- View Mode -->
+    <div id="view-mode" class="view-mode">
+        <div class="cover-letter-display">
+            {{ cover_letter.content }}
+        </div>
+
+        <div class="action-bar">
+            <button onclick="copyToClipboard()" class="btn btn-copy">
+                📋 Copy to Clipboard
+            </button>
+            <button onclick="downloadAsPDF()" class="btn btn-download">
+                📥 Download as PDF
+            </button>
+            <a href="{{ url_for('cover_letters.edit', id=cover_letter.id) }}" class="btn btn-primary">
+                ✏️ Edit
+            </a>
+            <form method="POST" action="{{ url_for('cover_letters.delete', id=cover_letter.id) }}"
+                style="display: inline;"
+                onsubmit="return confirm('Are you sure you want to delete this cover letter?');">
+                <button type="submit" class="btn" style="background: #dc2626; color: white;">
+                    🗑️ Delete
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function copyToClipboard() {
+        const text = document.querySelector('.cover-letter-display').innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            alert('✅ Cover letter copied to clipboard!');
+        }).catch(err => {
+            alert('❌ Failed to copy: ' + err);
+        });
+    }
+
+    function downloadAsPDF() {
+        // Simple download as text file (PDF generation would require a library)
+        const text = document.querySelector('.cover-letter-display').innerText;
+        const blob = new Blob([text], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'cover_letter_{{ cover_letter.id }}.txt';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        alert('📥 Cover letter downloaded! (Note: PDF generation coming soon - downloaded as .txt for now)');
+    }
+</script>
+{% endblock %}

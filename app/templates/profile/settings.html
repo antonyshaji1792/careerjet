@@ -1,0 +1,725 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    .settings-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .portal-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+    }
+
+    .portal-card:hover {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .portal-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .portal-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        font-size: 1.5rem;
+    }
+
+    .linkedin-icon {
+        background: #e0f2fe;
+        color: #0284c7;
+    }
+
+    .naukri-icon {
+        background: #fff7ed;
+        color: #ea580c;
+    }
+
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-active {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-inactive {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .test-result {
+        margin-top: 1rem;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        display: none;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .test-success {
+        background: #dcfce7;
+        border: 1px solid #86efac;
+        color: #166534;
+    }
+
+    .test-error {
+        background: #fee2e2;
+        border: 1px solid #fca5a5;
+        color: #991b1b;
+    }
+
+    .loading-spinner {
+        display: none;
+        width: 1.1rem;
+        height: 1.1rem;
+        border: 2px solid #ffffff;
+        border-top: 2px solid transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        vertical-align: middle;
+        margin-right: 5px;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Tabs Styling */
+    .settings-tabs {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 2px solid #e5e7eb;
+        padding-bottom: 0.5rem;
+    }
+
+    .tab-btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        background: none;
+        font-weight: 600;
+        color: #6b7280;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+
+    .tab-btn:hover {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .tab-btn.active {
+        background: #6366f1;
+        color: white;
+    }
+
+    .settings-pane {
+        display: none;
+    }
+
+    .settings-pane.active {
+        display: block;
+    }
+
+    .provider-section {
+        background: #f9fafb;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #e5e7eb;
+    }
+
+    .provider-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+    }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 24px;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+    input:checked+.slider {
+        background-color: #10b981;
+    }
+
+    input:checked+.slider:before {
+        transform: translateX(20px);
+    }
+
+    .form-row {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.75rem;
+    }
+
+    .form-row .form-group {
+        flex: 1;
+        margin-bottom: 0;
+    }
+
+    .test-ai-btn {
+        background: white;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+        font-size: 0.75rem;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 700;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .test-ai-btn:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+            <h1 style="font-size: 1.875rem; font-weight: 700; color: #111827;">System Settings</h1>
+            <p style="color: #6b7280;">Manage your portal connections and AI configurations.</p>
+        </div>
+        {% if current_user.is_admin %}
+        <span class="status-badge status-active"><i class="fas fa-shield-alt"></i> Administrator</span>
+        {% endif %}
+    </div>
+
+    <div class="settings-tabs">
+        <button class="tab-btn active" onclick="switchTab('portals')">
+            <i class="fas fa-plug"></i> Job Portals
+        </button>
+        {% if current_user.is_admin %}
+        <button class="tab-btn" onclick="switchTab('ai')">
+            <i class="fas fa-robot"></i> AI Configuration
+        </button>
+        {% endif %}
+    </div>
+
+    <div id="portals-pane" class="settings-pane active">
+        {% for platform in platforms %}
+        <div class="portal-card">
+            <div class="portal-header">
+                <div class="portal-icon" style="background: {{ platform.bg }}; color: {{ platform.color }};">
+                    <i class="{{ platform.icon }}"></i>
+                </div>
+                <div style="flex: 1;">
+                    <h3 style="margin: 0; font-weight: 600;">{{ platform.name }}</h3>
+                    {% set portal_creds = creds.get(platform.id) %}
+                    {% if portal_creds and portal_creds.is_active %}
+                    <span class="status-badge status-active">Connected</span>
+                    {% else %}
+                    <span class="status-badge status-inactive">Not Connected</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="portal" value="{{ platform.id }}">
+                <div class="form-group">
+                    <label>Email / Username</label>
+                    <input type="text" name="email" class="form-control"
+                        value="{{ (creds.get(platform.id).email if creds.get(platform.id) else '') }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Update {{ platform.name }}</button>
+                    <button type="button" class="btn btn-outline test-btn" data-portal="{{ platform.id }}"
+                        style="flex: 1;">
+                        <span class="btn-text">Test Connection</span>
+                        <span class="loading-spinner"></span>
+                    </button>
+                </div>
+            </form>
+            <div id="{{ platform.id }}-test-result" class="test-result"></div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if current_user.is_admin %}
+    <div id="ai-pane" class="settings-pane">
+        <div class="portal-card" style="padding: 2.5rem;">
+            <form action="{{ url_for('profile.save_llm_settings') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <h2
+                    style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+                    <i class="fas fa-brain" style="color: #6366f1;"></i> Core AI Engine
+                </h2>
+
+                <div class="form-group"
+                    style="margin-bottom: 2.5rem; background: #f1f5f9; padding: 1.5rem; border-radius: 12px;">
+                    <label style="display: block; font-weight: 700; margin-bottom: 0.75rem; color: #1e293b;">Primary AI
+                        Provider</label>
+                    <div style="display: flex; gap: 1rem;">
+                        <select name="PRIMARY_LLM_PROVIDER" class="form-control" style="flex: 1;">
+                            <option value="openai" {% if llm_configs.PRIMARY_LLM_PROVIDER=='openai' %}selected{% endif
+                                %}>OpenAI (gpt-4o)</option>
+                            <option value="anthropic" {% if llm_configs.PRIMARY_LLM_PROVIDER=='anthropic' %}selected{%
+                                endif %}>Anthropic (Claude)</option>
+                            <option value="gemini" {% if llm_configs.PRIMARY_LLM_PROVIDER=='gemini' %}selected{% endif
+                                %}>Google Gemini</option>
+                            <option value="openrouter" {% if llm_configs.PRIMARY_LLM_PROVIDER=='openrouter' %}selected{%
+                                endif %}>OpenRouter (Global Aggregate)</option>
+                            <option value="groq" {% if llm_configs.PRIMARY_LLM_PROVIDER=='groq' %}selected{% endif %}>
+                                Groq (Ultra-Fast)</option>
+                            <option value="mistral" {% if llm_configs.PRIMARY_LLM_PROVIDER=='mistral' %}selected{% endif
+                                %}>Mistral AI</option>
+                            <option value="ollama" {% if llm_configs.PRIMARY_LLM_PROVIDER=='ollama' %}selected{% endif
+                                %}>Ollama (Local Inference)</option>
+                        </select>
+                        <button type="button" class="btn btn-outline test-ai-all-btn" style="background: white;">
+                            <i class="fas fa-vial"></i> Test Primary
+                        </button>
+                    </div>
+                </div>
+
+                <!-- OpenRouter Section (Prominent) -->
+                <div class="provider-section" style="border-left: 4px solid #6366f1; background: #f5f3ff;">
+                    <div class="provider-header">
+                        <label style="font-weight: 700;"><i class="fas fa-globe"></i> OpenRouter (Recommended
+                            Aggregate)</label>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <button type="button" class="test-ai-btn" data-provider="openrouter">
+                                <span class="btn-text"><i class="fas fa-flask"></i> Test</span>
+                                <span class="loading-spinner"></span>
+                            </button>
+                            <label class="switch">
+                                <input type="checkbox" name="OPENROUTER_IS_ACTIVE" {% if
+                                    llm_configs.OPENROUTER_IS_ACTIVE %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 2;">
+                            <label style="font-size: 0.8rem; color: #64748b;">API Key</label>
+                            <input type="password" name="OPENROUTER_API_KEY" class="form-control"
+                                value="{{ llm_configs.OPENROUTER_API_KEY }}" placeholder="sk-or-...">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label style="font-size: 0.8rem; color: #64748b;">Default Model</label>
+                            <input type="text" name="OPENROUTER_MODEL" class="form-control"
+                                value="{{ llm_configs.OPENROUTER_MODEL }}" placeholder="anthropic/claude-3.5-sonnet">
+                        </div>
+                    </div>
+                    <div class="form-row" style="margin-top: 0.5rem;">
+                        <div class="form-group">
+                            <label style="font-size: 0.8rem; color: #64748b;">Site URL (Referer)</label>
+                            <input type="text" name="OPENROUTER_REFERER" class="form-control"
+                                value="{{ llm_configs.OPENROUTER_REFERER or 'https://careerjet.ai' }}"
+                                placeholder="https://your-site.com">
+                        </div>
+                        <div class="form-group">
+                            <label style="font-size: 0.8rem; color: #64748b;">Site Title</label>
+                            <input type="text" name="OPENROUTER_TITLE" class="form-control"
+                                value="{{ llm_configs.OPENROUTER_TITLE or 'CareerJet AI' }}"
+                                placeholder="My Site Title">
+                        </div>
+                    </div>
+                    <div id="openrouter-test-result" class="test-result"></div>
+                </div>
+
+                <!-- OpenAI Section -->
+                <div class="provider-section">
+                    <div class="provider-header">
+                        <label style="font-weight: 700;"><i class="fab fa-openai"></i> OpenAI</label>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <button type="button" class="test-ai-btn" data-provider="openai">
+                                <span class="btn-text"><i class="fas fa-flask"></i> Test</span>
+                                <span class="loading-spinner"></span>
+                            </button>
+                            <label class="switch">
+                                <input type="checkbox" name="OPENAI_IS_ACTIVE" {% if llm_configs.OPENAI_IS_ACTIVE
+                                    %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 2;">
+                            <label style="font-size: 0.8rem; color: #64748b;">API Key</label>
+                            <input type="password" name="OPENAI_API_KEY" class="form-control"
+                                value="{{ llm_configs.OPENAI_API_KEY }}" placeholder="sk-...">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label style="font-size: 0.8rem; color: #64748b;">Model Name</label>
+                            <input type="text" name="OPENAI_MODEL" class="form-control"
+                                value="{{ llm_configs.OPENAI_MODEL }}" placeholder="gpt-4o">
+                        </div>
+                    </div>
+                    <div id="openai-test-result" class="test-result"></div>
+                </div>
+
+                <!-- Anthropic Section -->
+                <div class="provider-section">
+                    <div class="provider-header">
+                        <label style="font-weight: 700;"><i class="fas fa-feather"></i> Anthropic</label>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <button type="button" class="test-ai-btn" data-provider="anthropic">
+                                <span class="btn-text"><i class="fas fa-flask"></i> Test</span>
+                                <span class="loading-spinner"></span>
+                            </button>
+                            <label class="switch">
+                                <input type="checkbox" name="ANTHROPIC_IS_ACTIVE" {% if llm_configs.ANTHROPIC_IS_ACTIVE
+                                    %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 2;">
+                            <label style="font-size: 0.8rem; color: #64748b;">API Key</label>
+                            <input type="password" name="ANTHROPIC_API_KEY" class="form-control"
+                                value="{{ llm_configs.ANTHROPIC_API_KEY }}" placeholder="sk-ant-...">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label style="font-size: 0.8rem; color: #64748b;">Model Name</label>
+                            <input type="text" name="ANTHROPIC_MODEL" class="form-control"
+                                value="{{ llm_configs.ANTHROPIC_MODEL }}" placeholder="claude-3-5-sonnet-20240620">
+                        </div>
+                    </div>
+                    <div id="anthropic-test-result" class="test-result"></div>
+                </div>
+
+                <!-- Mistral Section -->
+                <div class="provider-section">
+                    <div class="provider-header">
+                        <label style="font-weight: 700;"><i class="fas fa-wind"></i> Mistral AI</label>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <button type="button" class="test-ai-btn" data-provider="mistral">
+                                <span class="btn-text"><i class="fas fa-flask"></i> Test</span>
+                                <span class="loading-spinner"></span>
+                            </button>
+                            <label class="switch">
+                                <input type="checkbox" name="MISTRAL_IS_ACTIVE" {% if llm_configs.MISTRAL_IS_ACTIVE
+                                    %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 2;">
+                            <label style="font-size: 0.8rem; color: #64748b;">API Key</label>
+                            <input type="password" name="MISTRAL_API_KEY" class="form-control"
+                                value="{{ llm_configs.MISTRAL_API_KEY }}" placeholder="API Key">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label style="font-size: 0.8rem; color: #64748b;">Model Name</label>
+                            <input type="text" name="MISTRAL_MODEL" class="form-control"
+                                value="{{ llm_configs.MISTRAL_MODEL }}" placeholder="mistral-large-latest">
+                        </div>
+                    </div>
+                    <div id="mistral-test-result" class="test-result"></div>
+                </div>
+
+                <!-- Groq Section -->
+                <div class="provider-section">
+                    <div class="provider-header">
+                        <label style="font-weight: 700;"><i class="fas fa-bolt" style="color: #f59e0b;"></i>
+                            Groq</label>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <button type="button" class="test-ai-btn" data-provider="groq">
+                                <span class="btn-text"><i class="fas fa-flask"></i> Test</span>
+                                <span class="loading-spinner"></span>
+                            </button>
+                            <label class="switch">
+                                <input type="checkbox" name="GROQ_IS_ACTIVE" {% if llm_configs.GROQ_IS_ACTIVE
+                                    %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 2;">
+                            <label style="font-size: 0.8rem; color: #64748b;">API Key</label>
+                            <input type="password" name="GROQ_API_KEY" class="form-control"
+                                value="{{ llm_configs.GROQ_API_KEY }}" placeholder="gsk_...">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label style="font-size: 0.8rem; color: #64748b;">Model Name</label>
+                            <input type="text" name="GROQ_MODEL" class="form-control"
+                                value="{{ llm_configs.GROQ_MODEL }}" placeholder="llama3-70b-8192">
+                        </div>
+                    </div>
+                    <div id="groq-test-result" class="test-result"></div>
+                </div>
+
+                <!-- Gemini Section -->
+                <div class="provider-section">
+                    <div class="provider-header">
+                        <label style="font-weight: 700;"><i class="fas fa-star"></i> Gemini</label>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <button type="button" class="test-ai-btn" data-provider="gemini">
+                                <span class="btn-text"><i class="fas fa-flask"></i> Test</span>
+                                <span class="loading-spinner"></span>
+                            </button>
+                            <label class="switch">
+                                <input type="checkbox" name="GEMINI_IS_ACTIVE" {% if llm_configs.GEMINI_IS_ACTIVE
+                                    %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 2;">
+                            <label style="font-size: 0.8rem; color: #64748b;">API Key</label>
+                            <input type="password" name="GEMINI_API_KEY" class="form-control"
+                                value="{{ llm_configs.GEMINI_API_KEY }}" placeholder="API Key">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label style="font-size: 0.8rem; color: #64748b;">Model Name</label>
+                            <input type="text" name="GEMINI_MODEL" class="form-control"
+                                value="{{ llm_configs.GEMINI_MODEL }}" placeholder="gemini-1.5-flash">
+                        </div>
+                    </div>
+                    <div id="gemini-test-result" class="test-result"></div>
+                </div>
+
+                <!-- Ollama Section -->
+                <div class="provider-section">
+                    <div class="provider-header">
+                        <label style="font-weight: 700;"><i class="fas fa-server"></i> Ollama (Local)</label>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <button type="button" class="test-ai-btn" data-provider="ollama">
+                                <span class="btn-text"><i class="fas fa-flask"></i> Test</span>
+                                <span class="loading-spinner"></span>
+                            </button>
+                            <label class="switch">
+                                <input type="checkbox" name="OLLAMA_IS_ACTIVE" {% if llm_configs.OLLAMA_IS_ACTIVE
+                                    %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 2;">
+                            <label style="font-size: 0.8rem; color: #64748b;">Base URL</label>
+                            <input type="text" name="OLLAMA_BASE_URL" class="form-control"
+                                value="{{ llm_configs.OLLAMA_BASE_URL }}" placeholder="http://localhost:11434">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label style="font-size: 0.8rem; color: #64748b;">Model Name</label>
+                            <input type="text" name="OLLAMA_MODEL" class="form-control"
+                                value="{{ llm_configs.OLLAMA_MODEL }}" placeholder="llama3">
+                        </div>
+                    </div>
+                    <div id="ollama-test-result" class="test-result"></div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                    <i class="fas fa-save"></i> Save AI Configuration
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function switchTab(tabId) {
+        document.querySelectorAll('.settings-pane').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+        const pane = document.getElementById(tabId + '-pane');
+        if (pane) pane.classList.add('active');
+
+        // Find the button that was clicked
+        const btn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
+        if (btn) btn.classList.add('active');
+
+        window.location.hash = tabId;
+    }
+
+    // Handle initial hash
+    if (window.location.hash) {
+        const hash = window.location.hash.substring(1);
+        switchTab(hash);
+    }
+
+    // Job Portal Connection Testing
+    document.querySelectorAll('.test-btn').forEach(btn => {
+        btn.addEventListener('click', async function () {
+            const portal = this.dataset.portal;
+            const resultDiv = document.getElementById(`${portal}-test-result`);
+            const btnText = this.querySelector('.btn-text');
+            const spinner = this.querySelector('.loading-spinner');
+
+            this.disabled = true;
+            btnText.style.display = 'none';
+            spinner.style.display = 'inline-block';
+            resultDiv.style.display = 'none';
+
+            try {
+                const response = await fetch(`/profile/test-connection/${portal}`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                resultDiv.style.display = 'block';
+                resultDiv.className = `test-result ${data.success ? 'test-success' : 'test-error'}`;
+                resultDiv.innerHTML = `<i class="fas ${data.success ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${data.message}`;
+            } catch (err) {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'test-result test-error';
+                resultDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> Error connecting to server.`;
+            } finally {
+                this.disabled = false;
+                btnText.style.display = 'inline';
+                spinner.style.display = 'none';
+            }
+        });
+    });
+
+    // AI Provider Connection Testing
+    document.querySelectorAll('.test-ai-btn').forEach(btn => {
+        btn.addEventListener('click', async function () {
+            const provider = this.dataset.provider;
+            const resultDiv = document.getElementById(`${provider}-test-result`);
+            const btnText = this.querySelector('.btn-text');
+            const spinner = this.querySelector('.loading-spinner');
+
+            // Find parent section values
+            const section = this.closest('.provider-section');
+            const apiKey = section.querySelector(`input[name$="_API_KEY"]`)?.value || section.querySelector(`input[name$="_BASE_URL"]`)?.value;
+            const model = section.querySelector(`input[name$="_MODEL"]`)?.value;
+
+            this.disabled = true;
+            btnText.style.display = 'none';
+            spinner.style.display = 'inline-block';
+            resultDiv.style.display = 'none';
+
+            try {
+                const response = await fetch(`/profile/test-ai-connection/${provider}`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        api_key: apiKey,
+                        model: model
+                    })
+                });
+                const data = await response.json();
+
+                resultDiv.style.display = 'block';
+                resultDiv.className = `test-result ${data.success ? 'test-success' : 'test-error'}`;
+                resultDiv.innerHTML = `<i class="fas ${data.success ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${data.message}`;
+            } catch (err) {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'test-result test-error';
+                resultDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> Connection check failed.`;
+            } finally {
+                this.disabled = false;
+                btnText.style.display = 'inline';
+                spinner.style.display = 'none';
+            }
+        });
+    });
+    // Test Primary AI Provider
+    document.querySelector('.test-ai-all-btn')?.addEventListener('click', async function () {
+        const select = document.querySelector('select[name="PRIMARY_LLM_PROVIDER"]');
+        const provider = select.value;
+        const btn = this;
+        const originalHtml = btn.innerHTML;
+
+        btn.disabled = true;
+        btn.innerHTML = `<span class="loading-spinner" style="display:inline-block"></span> Testing...`;
+
+        try {
+            const response = await fetch(`/profile/test-ai-connection/${provider}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ api_key: '********' }) // Use saved key
+            });
+            const data = await response.json();
+            alert(data.message);
+        } catch (err) {
+            alert('Test failed. Check console for details.');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+        }
+    });
+</script>
+{% endblock %}

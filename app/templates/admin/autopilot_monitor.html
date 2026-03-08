@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    .monitor-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem 0;
+    }
+
+    .status-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .monitor-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .monitor-table th {
+        background: #f8fafc;
+        padding: 1rem 1.5rem;
+        text-align: left;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    .monitor-table td {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.875rem;
+        vertical-align: middle;
+    }
+
+    .conn-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 99px;
+        font-size: 0.7rem;
+        font-weight: 700;
+    }
+
+    .conn-success {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .conn-missing {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .progress-mini {
+        height: 8px;
+        background: #f1f5f9;
+        border-radius: 4px;
+        width: 100px;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        height: 100%;
+        background: #6366f1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="monitor-container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div>
+            <h1 style="margin: 0; font-size: 1.875rem; font-weight: 800; color: #1e293b;">🤖 Autopilot Monitor</h1>
+            <p style="color: #64748b; margin-top: 0.35rem;">Live health and activity tracking for all automated agents.
+            </p>
+        </div>
+        <div style="display: flex; gap: 1rem;">
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Dashboard
+            </a>
+            <button onclick="location.reload()" class="btn btn-primary" style="background: #1e293b;">
+                <i class="fas fa-sync"></i> Refresh Data
+            </button>
+        </div>
+    </div>
+
+    <div class="status-card">
+        <table class="monitor-table">
+            <thead>
+                <tr>
+                    <th>User Identity</th>
+                    <th>Alerts</th>
+                    <th>Daily Quota</th>
+                    <th>Today's Activity</th>
+                    <th>Global Apps</th>
+                    <th>Connectivity</th>
+                    <th>Last Active</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in monitor_data %}
+                <tr>
+                    <td>
+                        <div style="font-weight: 700; color: #1e293b;">{{ data.user_email }}</div>
+                    </td>
+                    <td>
+                        <span style="font-weight: 600; color: #6366f1;">{{ data.alerts }} active</span>
+                    </td>
+                    <td>
+                        <div style="font-size: 0.75rem; color: #64748b;">
+                            Search: <strong>{{ data.search_limit }}</strong><br>
+                            Apply: <strong>{{ data.apply_limit }}</strong>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <span style="font-weight: 700; color: #10b981;">{{ data.apps_today }}</span>
+                            <div class="progress-mini">
+                                <div class="progress-bar"
+                                    style="width: {{ (data.apps_today / (data.apply_limit or 1) * 100)|round }}%; background: #10b981;">
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="font-weight: 600;">{{ data.total_apps }} sent</div>
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem; flex-direction: column;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+                                <span style="font-size: 0.65rem; font-weight: 600; color: #64748b;">LINKEDIN</span>
+                                <span
+                                    class="conn-badge {{ 'conn-success' if data.linkedin == 'Connected' else 'conn-missing' }}">{{
+                                    data.linkedin }}</span>
+                            </div>
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+                                <span style="font-size: 0.65rem; font-weight: 600; color: #64748b;">NAUKRI</span>
+                                <span
+                                    class="conn-badge {{ 'conn-success' if data.naukri == 'Connected' else 'conn-missing' }}">{{
+                                    data.naukri }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div
+                            style="font-size: 0.8125rem; font-weight: 600; color: {{ 'var(--accent-success)' if data.last_active != 'Never' else '#94a3b8' }};">
+                            <i class="fas fa-clock"></i>
+                            <span class="heartbeat-time" data-timestamp="{{ data.last_active }}">{{ data.last_active
+                                }}</span>
+                        </div>
+                        {% if data.last_active != 'Never' %}
+                        <div class="heartbeat-ago"
+                            style="font-size: 0.65rem; color: #10b981; margin-top: 2px; font-weight: 700;">
+                            Calculating...</div>
+                        {% else %}
+                        <div style="font-size: 0.65rem; color: #94a3b8; margin-top: 2px;">No activity recorded</div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not monitor_data %}
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 4rem; color: #94a3b8;">
+                        <i class="fas fa-robot fa-3x" style="display: block; margin-bottom: 1rem; opacity: 0.3;"></i>
+                        No users have Autopilot enabled yet.
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function updateTimeAgo() {
+        const elements = document.querySelectorAll('.heartbeat-time');
+        const now = new Date();
+
+        elements.forEach(el => {
+            const timestamp = el.getAttribute('data-timestamp');
+            if (timestamp === 'Never') return;
+
+            const agoEl = el.parentElement.nextElementSibling;
+            if (!agoEl || !agoEl.classList.contains('heartbeat-ago')) return;
+
+            // Date format: YYYY-MM-DD HH:MM
+            const parts = timestamp.split(' ');
+            const dateParts = parts[0].split('-');
+            const timeParts = parts[1].split(':');
+
+            // Note: Creating date object assuming UTC from Python
+            const date = new Date(Date.UTC(
+                parseInt(dateParts[0]),
+                parseInt(dateParts[1]) - 1,
+                parseInt(dateParts[2]),
+                parseInt(timeParts[0]),
+                parseInt(timeParts[1])
+            ));
+
+            const diffMs = now - date;
+            const diffMin = Math.floor(diffMs / 60000);
+
+            let agoText = "";
+            if (diffMin < 1) agoText = "Just now";
+            else if (diffMin < 60) agoText = `${diffMin}m ago`;
+            else if (diffMin < 1440) agoText = `${Math.floor(diffMin / 60)}h ago`;
+            else agoText = `${Math.floor(diffMin / 1440)}d ago`;
+
+            agoEl.innerText = agoText;
+        });
+    }
+
+    updateTimeAgo();
+    setInterval(updateTimeAgo, 60000); // Update every minute
+</script>
+{% endblock %}
+```

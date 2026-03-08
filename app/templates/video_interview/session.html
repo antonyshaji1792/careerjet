@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/video_interview.css') }}">
+{% endblock %}
+
+{% block body_class %}bg-dark immersive-mode{% endblock %}
+{% block main_class %}container-fluid p-0 w-100{% endblock %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div id="video-interview-stage">
+    <!-- Header -->
+    <div class="stage-header">
+        <div class="d-flex align-items-center">
+            <h4 class="mb-0 fw-bold me-3">CareerJet AI</h4>
+            <span class="badge bg-secondary opacity-75">Q<span id="qIndex">1</span> of <span id="qTotal">5</span></span>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <span id="sessionTimer" class="font-monospace">00:00</span>
+            <button class="btn btn-sm btn-outline-light opacity-50" onclick="confirmExit()">End Session</button>
+        </div>
+    </div>
+
+    <!-- Main Stage -->
+    <div class="stage-main">
+        <!-- Avatar Panel -->
+        <div class="avatar-container" id="avatarBox">
+            <div id="statusPulse" class="status-pulse"></div>
+            <!-- Dynamic Avatar based on persona -->
+            <img id="avatarImage" src="/static/img/avatars/{{ session_data.persona }}_neutral.png"
+                onerror="this.src='https://ui-avatars.com/api/?name={{ session_data.persona }}&background=6366f1&color=fff&size=512'"
+                alt="AI Interviewer">
+
+            <!-- Contextual Status Label -->
+            <div class="position-absolute top-100 start-50 translate-middle-x mt-3">
+                <span id="statusLabel" class="badge rounded-pill bg-dark py-2 px-3 fw-normal opacity-75">
+                    Connecting...
+                </span>
+            </div>
+        </div>
+
+        <!-- Subtitles -->
+        <div class="subtitle-box" id="subtitleBox">
+            <div id="subtitleText" class="subtitle-text d-none">
+                Connecting to AI Interviewer...
+            </div>
+        </div>
+
+        <!-- User PiP -->
+        <div class="user-pip {% if not session_data.camera_enabled %}d-none{% endif %}" id="userPiP">
+            <video id="userFeed" autoplay muted playsinline></video>
+            <div class="position-absolute bottom-0 start-0 w-100 bg-black bg-opacity-50 text-white p-1 text-center"
+                style="font-size: 10px;">
+                <i class="fas fa-shield-alt"></i> LOCAL | PRIVATE
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Controls -->
+    <div class="control-bar">
+        <button id="micToggle" class="control-btn" title="Mute Microphone">
+            <i class="fas fa-microphone"></i>
+        </button>
+        <button id="camToggle" class="control-btn" title="Toggle Camera">
+            <i class="fas fa-video"></i>
+        </button>
+        <button id="endBtn" class="control-btn btn-danger" onclick="confirmExit()" title="End Interview">
+            <i class="fas fa-phone-slash"></i>
+        </button>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="{{ url_for('static', filename='js/video_interview_controller.js') }}"></script>
+<script id="session-config-data" type="application/json">
+    {
+        "sessionId": {{ session_data.session_id | tojson }},
+        "persona": {{ session_data.persona | tojson }},
+        "cameraEnabled": {{ session_data.camera_enabled | tojson }},
+        "questions": {{ session_data.questions | tojson }},
+        "jobTitle": {{ session_data.job_title | tojson }},
+        "csrfToken": "{{ csrf_token() }}"
+    }
+</script>
+<script>
+    // Initialize session data from server
+    const SESSION_CONFIG = JSON.parse(document.getElementById('session-config-data').textContent);
+
+    window.onload = () => {
+        initVideoInterview(SESSION_CONFIG);
+    };
+
+    function confirmExit() {
+        if (confirm("End this interview? Your progress will be saved.")) {
+            if (typeof stopInterviewMedia === 'function') {
+                stopInterviewMedia();
+            }
+            window.location.href = "{{ url_for('video_interview.results', session_id=session_data.session_id) }}";
+        }
+    }
+</script>
+{% endblock %}

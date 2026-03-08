@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    .edit-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .edit-card {
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 2rem;
+    }
+
+    textarea.edit-textarea {
+        width: 100%;
+        min-height: 500px;
+        padding: 1.5rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-family: 'Georgia', serif;
+        font-size: 1rem;
+        line-height: 1.8;
+        resize: vertical;
+        margin-bottom: 1.5rem;
+    }
+
+    textarea.edit-textarea:focus {
+        outline: none;
+        border-color: #6366f1;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .char-count {
+        text-align: right;
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="edit-container">
+    <div style="margin-bottom: 2rem;">
+        <h1 style="margin: 0 0 0.5rem 0;">✏️ Edit Cover Letter</h1>
+        <p style="color: #6b7280; margin: 0;">
+            Make changes to your cover letter
+        </p>
+    </div>
+
+    <div class="edit-card">
+        <form method="POST">
+            <div class="form-group">
+                <label for="content">Cover Letter Content *</label>
+                <textarea id="content" name="content" class="edit-textarea"
+                    required>{{ cover_letter.content }}</textarea>
+                <div class="char-count">
+                    <span id="char-count">{{ cover_letter.content|length }}</span> characters
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">
+                    💾 Save Changes
+                </button>
+                <a href="{{ url_for('cover_letters.view', id=cover_letter.id) }}" class="btn btn-outline"
+                    style="flex: 1; text-align: center;">
+                    ❌ Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div
+        style="margin-top: 2rem; background: #fef3c7; border-left: 4px solid #f59e0b; padding: 1rem; border-radius: 8px;">
+        <p style="margin: 0; color: #92400e; font-size: 0.875rem;">
+            <strong>💡 Tip:</strong> Keep your cover letter concise (3-4 paragraphs). Focus on your most relevant skills
+            and experiences.
+        </p>
+    </div>
+</div>
+
+<script>
+    // Character counter
+    const textarea = document.getElementById('content');
+    const charCount = document.getElementById('char-count');
+
+    textarea.addEventListener('input', function () {
+        charCount.textContent = this.value.length;
+    });
+</script>
+{% endblock %}
