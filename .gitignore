@@ -12,6 +12,7 @@ __pycache__/
 instance/
 llm_debug.log
 *.png
+!screenshots/*.png
 debug_endpoint.txt
 node_modules/
 dist/
