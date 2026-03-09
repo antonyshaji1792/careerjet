@@ -138,7 +138,7 @@ Transparent credit system with **Stripe** and **Razorpay** payment support. Cred
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/careerjet.git
+git clone [https://github.com/your-username/careerjet.git](https://github.com/antonyshaji1792/careerjet.git)
 cd careerjet
 ```
 
